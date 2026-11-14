@@ -81,18 +81,18 @@ These global assertions verify compliance with the client's non-negotiable archi
 
 | Verification Item | Required Standard | Status | Verified Evidence / Command |
 |---|---|---|---|
-| **1. Volume Directory Structure** | Six required folders exist under prefix: `source_register`, `raw`, `clean`, `facts`, `output`, `logs`. | `TODO(Parth)` | Inspected in Databricks Volume catalog. |
-| **2. Zero Local Data Footprint** | Local repository working tree contains zero scraped data, cached HTML, or output JSON files. | `TODO(Parth)` | `git status` shows clean tree; no files outside `.gitignore`. |
+| **1. Volume Directory Structure** | Six required folders exist under prefix: `source_register`, `raw`, `clean`, `facts`, `output`, `logs`. | `TODO(Nikhil)` | Managed & verified by Nikhil in Databricks Volume catalog. |
+| **2. Zero Local Data Footprint** | Local repository working tree contains zero scraped data, cached HTML, or output JSON files. | `VERIFIED` | `git status` shows clean tree; no files outside `.gitignore`. |
 | **3. Memory-Only Output** | Scraped HTML exists only in volatile memory during execution. | `VERIFIED` | Unit tests verify `FetchedPage.model_dump()` excludes `html`. |
 | **4. Offline Test Integrity** | All unit tests pass completely offline with zero live network calls. | `VERIFIED` | `pytest -q` passes 127 tests in 14.28s. |
 
 ---
 
-## 6. Task P6: Databricks Evidence & Screenshot Protocol
+## 6. Task P6: Databricks Evidence & Screenshot Protocol (Owner: Nikhil)
 
-The Databricks Volume screenshot serves as verifiable visual proof of cloud-native execution for Atlas Copco leadership.
+As established in the project ownership matrix, Nikhil owns the Databricks workspace administration, run execution, and cloud-side evidence collection. Nikhil captures the Volume screenshots following the final demo run; Parth reviews the evidence to ensure compliance before including references in presentation collateral.
 
-### Mandatory Screenshot Requirements
+### Mandatory Screenshot Requirements (Captured by Nikhil)
 1. **Catalog View:** Navigate to `Catalog` → `atlas_poc` → `default` → `data` in the Databricks UI.
 2. **Folder Completeness:** Ensure the UI display clearly reveals all six subfolders:
    - `source_register/`
