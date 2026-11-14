@@ -159,3 +159,133 @@ def test_nothing_dropped():
     out = apply_filter(items, {"acme_news": make_source()}, today=TODAY)
     assert [i.id for i in out] == ["1", "2"]
     assert [i.filter.passed for i in out] == [True, False]
+
+
+# ---------------- phase 2: settings ----------------
+
+import pytest  # noqa: E402
+
+from atlas.models import ScoutSettings  # noqa: E402
+
+
+def judge(item=None, source=None, **settings_kw):
+    item = item or make_item()
+    source = source or make_source()
+    settings = ScoutSettings(**settings_kw)
+    (out,) = apply_filter([item], {source.source_id: source}, today=TODAY, settings=settings)
+    return out.filter
+
+
+def test_default_settings_equal_phase_1_for_phase_1_items():
+    source = make_source()
+    items = [
+        make_item(),
+        make_item(matched_keywords=[], title="Quarterly report"),
+        make_item(published_at=None),
+        make_item(published_at="2024-01-01"),
+        make_item(mentions_us_location=False),
+    ]
+    old = apply_filter(items, {source.source_id: source}, today=TODAY)
+    new = apply_filter(items, {source.source_id: source}, today=TODAY, settings=ScoutSettings())
+    assert [i.filter for i in old] == [i.filter for i in new]
+
+
+def test_recent_months_comes_from_settings():
+    item = make_item(published_at="2026-07-01")
+    assert judge(item, recent_months=12).passed
+    f = judge(item, recent_months=2)
+    assert not f.passed and f.reasons == ["too_old"]
+
+
+def test_region_item_region_wins():
+    assert judge(make_item(region="US")).passed
+    f = judge(make_item(region="CA"))
+    assert not f.passed and "region_not_selected" in f.reasons
+    assert judge(make_item(region="CA"), regions=["US", "CA"]).passed
+
+
+def test_region_unknown_falls_back_to_phase_1_evidence_within_chosen_regions():
+    no_us_text = make_item(mentions_us_location=False)
+    ca_source = make_source(region="CA")
+    assert judge(no_us_text, ca_source).reasons == ["region_not_selected"]  # CA source, only US chosen
+    assert judge(no_us_text, ca_source, regions=["CA"]).passed
+    assert judge(no_us_text, make_source(region="NA"), regions=["MX"]).passed
+    # a US location in the text counts only when US is among the chosen regions
+    mentions_us = make_item(mentions_us_location=True)
+    assert judge(mentions_us, make_source(region="MX"), regions=["US"]).passed
+    assert judge(mentions_us, make_source(region="MX"), regions=["CA"]).reasons == ["region_not_selected"]
+
+
+def test_technology_filter():
+    item = make_item(technology="vacuum pumps")
+    assert judge(item, technologies=["Vacuum Pumps"]).passed
+    f = judge(item, technologies=["blowers"])
+    assert f.reasons == ["technology_not_selected"]
+    assert judge(make_item(technology=None), technologies=["blowers"]).reasons == ["technology_not_selected"]
+    assert judge(make_item(technology=None)).passed  # empty list = all
+
+
+def test_event_type_filter():
+    item = make_item(event_type="acquisition")
+    assert judge(item, event_types=["acquisition"]).passed
+    assert judge(item, event_types=["award"]).reasons == ["event_type_not_selected"]
+    assert judge(make_item(event_type=None), event_types=["award"]).reasons == ["event_type_not_selected"]
+
+
+def test_extra_keywords_make_an_item_compressor_related_via_title_and_facts():
+    item = make_item(matched_keywords=[], title="Acme opens plant", key_facts=["The new hydrogen booster ships in May."])
+    assert not judge(item).compressor_related
+    f = judge(item, extra_compressor_keywords=["hydrogen booster"])
+    assert f.compressor_related and f.passed
+
+
+def test_excluded_keywords_fail_with_reason():
+    item = make_item(key_facts=["Acme faces a lawsuit over the unit."])
+    f = judge(item, excluded_keywords=["lawsuit"])
+    assert not f.passed and f.reasons == ["excluded_keyword"]
+    assert judge(item, excluded_keywords=["law"]).passed  # whole word only
+    assert judge(item, excluded_keywords=["  ", ""]).passed  # blanks are ignored
+
+
+def test_require_industrial():
+    assert judge(make_item(industrial_hint=True), require_industrial=True).passed
+    assert judge(make_item(industrial_hint=False), require_industrial=True).reasons == ["not_industrial"]
+    assert judge(make_item(industrial_hint=False)).passed
+
+
+def test_source_types():
+    f = judge(make_item(), source_types=["government"])
+    assert f.reasons == ["source_type_not_selected"]
+
+
+def test_all_failed_checks_are_listed_in_a_fixed_order():
+    item = make_item(matched_keywords=[], title="Quarterly report", published_at="2024-01-01", region="MX",
+                     technology="blowers", event_type="award", key_facts=["a lawsuit"], industrial_hint=False,
+                     mentions_us_location=False)
+    source = make_source(region="MX")
+    f = judge(item, source, technologies=["vacuum pumps"], event_types=["acquisition"],
+              excluded_keywords=["lawsuit"], require_industrial=True, source_types=["government"],
+              regions=["US"])
+    assert f.reasons == [
+        "no_compressor_keyword", "too_old", "region_not_selected", "technology_not_selected",
+        "event_type_not_selected", "excluded_keyword", "not_industrial", "source_type_not_selected",
+    ]
+    assert not f.passed
+
+
+def test_new_rules_alone_set_passed_false_but_leave_the_four_checks_alone():
+    f = judge(make_item(region="CA"))
+    assert (f.compressor_related, f.north_america, f.credible_source, f.recent) == (True, True, True, True)
+    assert not f.passed
+
+
+def test_fallback_items_get_no_special_treatment():
+    assert judge(make_item(via_fallback=True, fallback_for="x")).passed
+    assert not judge(make_item(via_fallback=True, fallback_for="x", region="CA")).passed
+
+
+def test_nothing_is_dropped_by_the_filter():
+    source = make_source()
+    items = [make_item(region="CA"), make_item(region="US")]
+    out = apply_filter(items, {source.source_id: source}, today=TODAY, settings=ScoutSettings())
+    assert len(out) == 2

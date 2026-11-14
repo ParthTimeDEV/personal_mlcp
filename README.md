@@ -24,8 +24,16 @@ python -m atlas.storage_check                      # must print PASS first
 python -m atlas.run                                # full pipeline, all sources in config/sources.yaml
 python -m atlas.run --only <source_id>             # one source
 python -m atlas.run --max-items 5                  # limit items per source
+python -m atlas.run --use-default-settings         # ignore the saved settings (config/scout_settings.yaml)
+python -m atlas.run --no-discovery                 # skip source discovery this run
+python -m atlas.run --no-fallback                  # do not switch to other sources when one is refused
 pytest -q                                          # unit tests (offline)
 ```
+
+Phase 2 (see `parent2.md`): saved settings (`settings/scout_settings.json`) control scope, filter rules and the
+scout engine; candidates and decisions live in `scout/`; a run groups items into stories and, when a source is
+refused, switches to coverage of the same companies from other allowed sources (labelled `via_fallback`).
+The frontend is started with `streamlit run app/main.py`; reports are built by `atlas.report.build.write_report`.
 
 A run writes `source_register/`, `raw/`, `clean/`, `facts/`, `output/poc_<run_id>.json` and `logs/<run_id>.json`
 to the Volume `/Volumes/atlas_poc/default/data/<prefix>`, prints a per-source summary, and ends with a

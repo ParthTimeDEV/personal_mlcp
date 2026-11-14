@@ -315,4 +315,5 @@ class RunLog(BaseModel):
     gate_decisions: list[GateDecision] = Field(default_factory=list)
     refusals: list[Refusal] = Field(default_factory=list)
     errors: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)  # phase 2: discovery and switching findings (not errors)
     counts: dict[str, dict[str, int]] = Field(default_factory=dict)  # source_id -> {collected, clean, passed}
