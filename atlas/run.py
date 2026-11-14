@@ -34,18 +34,27 @@ def _dump(models: list) -> list[dict]:
     return [m.model_dump(mode="json") for m in models]
 
 
+def _say(message: str) -> None:
+    """Progress line, shown immediately. A run takes minutes (3 s between requests), so silence looks like a hang."""
+    print(message, flush=True)
+
+
 def _process_source(source: Source, st: SimpleNamespace, gate, sources_by_id: dict[str, Source],
                     run_id: str, max_items: int, log: RunLog) -> tuple[SourceSummary, list[Item]]:
     decision: GateDecision = gate.check_source(source)
     log.gate_decisions.append(decision)
     if not decision.allowed:
+        _say(f"  refused by the compliance gate: {', '.join(decision.reasons)}")
         return SourceSummary(
             source_id=source.source_id, name=source.name, status=source.vetting_status,
             note="refused by compliance gate: " + ", ".join(decision.reasons),
         ), []
 
+    _say(f"  allowed; fetching up to {max_items} pages (3 s between requests)...")
     result = st.collect_source(source, gate, max_items=max_items)
     log.refusals.extend(result.refusals)
+    _say(f"  collected {len(result.pages)} page(s) of {result.listing_count} listed; "
+         f"extracting (the first page loads the language model, about 15 s)...")
 
     raw = [
         RawItem(
@@ -75,6 +84,7 @@ def _process_source(source: Source, st: SimpleNamespace, gate, sources_by_id: di
         "collected": len(result.pages), "clean": len(final), "passed": len(passed),
         "duplicates_dropped": cleaned.duplicates_dropped,
     }
+    _say(f"  done: {len(passed)} of {len(final)} item(s) passed the filter")
     note = f"{len(result.refusals)} URL(s) refused during collection" if result.refusals else None
     return SourceSummary(
         source_id=source.source_id, name=source.name, status=source.vetting_status,
@@ -125,6 +135,7 @@ def main(argv: list[str] | None = None) -> int:
         storage.write_json(path, obj)
         paths.append(path)
 
+    _say(f"Run {run_id} starting. Connecting to Databricks...")
     storage.ensure_folders()
     sources = st.load_register()
     put("source_register/sources.json", _dump(sources))
@@ -133,6 +144,8 @@ def main(argv: list[str] | None = None) -> int:
     if not selected:
         print(f"No source with source_id '{args.only}' in the register.", file=sys.stderr)
         return 2
+    _say(f"{len(selected)} source(s) to check, up to {args.max_items} items each. "
+         f"We wait 3 s between requests, so expect a few minutes.")
 
     try:
         gate = st.ComplianceGate(sources)
@@ -144,7 +157,8 @@ def main(argv: list[str] | None = None) -> int:
     summaries: list[SourceSummary] = []
     all_passed: list[Item] = []
 
-    for source in selected:
+    for number, source in enumerate(selected, 1):
+        _say(f"\n[{number}/{len(selected)}] {source.source_id}")
         try:
             summary, passed = _process_source(source, st, gate, sources_by_id, run_id, args.max_items, log)
             summaries.append(summary)
@@ -154,6 +168,7 @@ def main(argv: list[str] | None = None) -> int:
                           f"facts/{source.source_id}/{run_id}.json"]
         except Exception as exc:  # one failing source must not stop the others
             log.errors.append(f"{source.source_id}: {type(exc).__name__}: {exc}")
+            _say(f"  ERROR: {type(exc).__name__}: {exc}")
             summaries.append(SourceSummary(
                 source_id=source.source_id, name=source.name, status=source.vetting_status,
                 note=f"error: {type(exc).__name__}: {exc}",
