@@ -1,6 +1,13 @@
 # Technology labels used to fill Item.technology. First matching entry wins, so keep specific ones above general ones.
 # Matching: case-insensitive, whole phrase, against title + main text. If nothing matches, technology stays null.
+# Phase 2 (sachi2.md S1): hydrogen and gas compression sit at the top because they name the gas being
+# compressed, which is more specific than the machine type. Vacuum, blowers and air treatment sit below the
+# compressor machine types, so a compressor article that only mentions a dryer keeps its compressor label.
 
+- label: hydrogen compression
+  patterns: [hydrogen compressor, hydrogen compressors, hydrogen compression, H2 compressor, hydrogen refuelling compressor, hydrogen refueling compressor]
+- label: gas compressor
+  patterns: [natural gas compressor, natural gas compression, biogas compressor, biogas compression, biomethane compressor, CO2 compressor, carbon dioxide compressor, nitrogen booster, nitrogen compressor, gas compressor, gas compressors, gas compression, process gas compressor]
 - label: oil-free rotary screw compressor
   patterns: [oil-free rotary screw, oil free rotary screw]
 - label: oil-free compressor
@@ -17,7 +24,11 @@
   patterns: [reciprocating compressor, piston compressor]
 - label: scroll compressor
   patterns: [scroll compressor]
+- label: vacuum pump
+  patterns: [dry screw vacuum, rotary vane vacuum, rotary vane pump, claw vacuum, claw pump, liquid ring, liquid-ring, vacuum pump, vacuum pumps, vacuum system, vacuum systems]
+- label: blower
+  patterns: [rotary lobe blower, rotary lobe, centrifugal blower, turbo blower, turbo blowers, screw blower, positive displacement blower, blower, blowers]
 - label: compressed air treatment
-  patterns: [air dryer, compressed air dryer, air filter, compressed air treatment]
+  patterns: [desiccant dryer, refrigerated dryer, refrigerant dryer, membrane dryer, coalescing filter, aftercooler, air dryer, compressed air dryer, air filter, compressed air filter, compressed air treatment]
 - label: compressed air system
   patterns: [compressed air system, compressed air]

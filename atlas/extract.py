@@ -1,12 +1,16 @@
 """Extractor: one fetched page -> one evidence record (Item).
 
-Owner: Sachi. Spec: sachi.md task S1 and parent.md sections 6 and 8.
+Owner: Sachi. Spec: sachi.md task S1, parent.md sections 6 and 8; Phase 2: sachi2.md tasks S1 to S5.
 
 Page text only ever exists in memory inside `extract_item`. The returned Item holds no page text:
 only short rule-extracted key facts (max 3, max 200 characters each) and signals computed while the
 text is in memory. Personal data is removed with Presidio using the small spaCy model
 `en_core_web_sm`. If Presidio or the model is missing, this module raises; it never falls back to
 regex and never skips the scrub.
+
+Phase 2 adds three rule-based signals, computed inside `extract_item` while the text is in memory:
+`detect_region` (US / CA / MX or None), `classify_event` (EventType or None) and `detect_product`
+(a stated product or model name, or None). None of them guesses: unknown stays None.
 """
 from __future__ import annotations
 
@@ -21,7 +25,9 @@ import trafilatura
 import yaml
 from dateutil import parser as date_parser
 
-from atlas.models import FetchedPage, Item, Label, Source, make_fingerprint, make_item_id
+from atlas.models import (
+    EventType, FetchedPage, Item, Label, Region, Source, make_fingerprint, make_item_id,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -97,7 +103,8 @@ def _resolve(path: str) -> Path:
 def _load_keywords(path: str = "config/keywords.yaml") -> dict[str, list[str]]:
     with open(_resolve(path), encoding="utf-8") as fh:
         data = yaml.safe_load(fh) or {}
-    return {key: [str(t) for t in (data.get(key) or [])] for key in ("compressor", "industrial", "us_locations")}
+    keys = ("compressor", "industrial", "us_locations", "ca_locations", "mx_locations")
+    return {key: [str(t) for t in (data.get(key) or [])] for key in keys}
 
 
 @lru_cache
@@ -113,6 +120,17 @@ def _load_aliases(path: str = "config/aliases.yaml") -> dict[str, list[str]]:
     with open(_resolve(path), encoding="utf-8") as fh:
         data = yaml.safe_load(fh) or {}
     return {str(canon): [str(canon), *(str(v) for v in (variants or []))] for canon, variants in data.items()}
+
+
+@lru_cache
+def _load_products(path: str = "config/products.yaml") -> dict[str, list[str]]:
+    """canonical company name -> product or series names (config/products.yaml)."""
+    with open(_resolve(path), encoding="utf-8") as fh:
+        data = yaml.safe_load(fh) or {}
+    return {
+        str(company): [str(entry["name"]) for entry in (entries or []) if entry.get("name")]
+        for company, entries in data.items()
+    }
 
 
 _LEGAL_WORDS = {"inc", "incorporated", "llc", "ltd", "limited", "co", "company", "corp", "corporation",
@@ -138,7 +156,8 @@ def _allow_list() -> list[str]:
                 words.pop()
                 if words:
                     names.add(" ".join(words))
-    names.update(_load_keywords()["us_locations"])
+    keywords = _load_keywords()
+    names.update(keywords["us_locations"] + keywords["ca_locations"] + keywords["mx_locations"])
     return sorted(names | {n.upper() for n in names} | {n.title() for n in names})
 
 
@@ -442,6 +461,315 @@ def _label(source: Source, haystack: str) -> Label:
     return "claim"  # competitor newsrooms, and anything unsure
 
 
+# ---------- Phase 2: region (sachi2.md S2) ----------
+
+REGIONS: tuple[str, ...] = ("US", "CA", "MX")
+
+# Phrases resolved before counting, so their words are not counted again: "North America" is not the
+# US, "New Mexico" is not Mexico, "Baja California" is not California.
+REGION_PHRASES: list[tuple[str, Optional[str]]] = [
+    ("North American", None), ("North America", None), ("Latin American", None), ("Latin America", None),
+    ("South American", None), ("South America", None), ("Central American", None),
+    ("Central America", None), ("Gulf of Mexico", None), ("New Mexico", "US"), ("Baja California", "MX"),
+]
+
+US_STATE_ABBR = {
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY",
+    "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND",
+    "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "DC",
+    # AP style, as used in press-release datelines ("DAVIDSON, N.C.")
+    "Ala.", "Ariz.", "Ark.", "Calif.", "Colo.", "Conn.", "Del.", "Fla.", "Ga.", "Ill.", "Ind.", "Kan.",
+    "Ky.", "La.", "Md.", "Mass.", "Mich.", "Minn.", "Miss.", "Mo.", "Mont.", "Neb.", "Nev.", "N.H.",
+    "N.J.", "N.M.", "N.Y.", "N.C.", "N.D.", "Okla.", "Ore.", "Pa.", "R.I.", "S.C.", "S.D.", "Tenn.",
+    "Vt.", "Va.", "Wash.", "W.Va.", "Wis.", "Wyo.",
+}
+CA_PROVINCE_ABBR = {
+    "ON", "QC", "BC", "AB", "MB", "SK", "NS", "NB", "NL", "PE", "YT", "NT", "NU",
+    "Ont.", "Que.", "B.C.", "Alta.", "Man.", "Sask.", "N.S.", "N.B.",
+}
+# A province or state abbreviation counts only directly after a capitalised place name and a comma
+# ("Burlington, ON", "Rock Hill, SC"). Case-sensitive, so "on" or "ca" in running text never counts.
+_CITY_COMMA_ABBR = re.compile(
+    r"(?<![\w<])[A-Z][A-Za-z.'’-]+(?:\s[A-Z][A-Za-z.'’-]+){0,2},\s("
+    + "|".join(re.escape(a) for a in sorted(US_STATE_ABBR | CA_PROVINCE_ABBR, key=len, reverse=True))
+    + r")(?!\w)"
+)
+
+
+def _count_location(term: str, text: str) -> int:
+    return len(_term_regex(term, case_sensitive=_is_abbreviation(term)).findall(text))
+
+
+def _region_counts(text: str) -> Counter:
+    """Hits per region in one piece of text."""
+    counts: Counter = Counter()
+    if not text:
+        return counts
+    for phrase, region in REGION_PHRASES:
+        pattern = _term_regex(phrase)
+        hits = len(pattern.findall(text))
+        if hits:
+            if region:
+                counts[region] += hits
+            text = pattern.sub(" ", text)
+    keywords = _load_keywords()
+    for region, key in (("US", "us_locations"), ("CA", "ca_locations"), ("MX", "mx_locations")):
+        for term in sorted(keywords[key], key=len, reverse=True):  # longest first: "Mexico City" before "Mexico"
+            pattern = _term_regex(term, case_sensitive=_is_abbreviation(term))
+            hits = len(pattern.findall(text))
+            if hits:
+                counts[region] += hits
+                text = pattern.sub(" ", text)
+    for match in _CITY_COMMA_ABBR.finditer(text):
+        counts["CA" if match.group(1) in CA_PROVINCE_ABBR else "US"] += 1
+    return counts
+
+
+def detect_region(source: Source, title: str | None, text: str) -> Region | None:
+    """US, CA or MX when the item itself is clearly about that region: the region with the most place
+    hits in title + text (title hits count double). A tie means conflicting locations: None. No hit at
+    all: the source's own region, if the source is based in one of the three; otherwise None.
+    Never defaults to US."""
+    counts = Counter()
+    for region, n in _region_counts(title or "").items():
+        counts[region] += 2 * n
+    counts.update(_region_counts(text or ""))
+    ranked = [(r, n) for r, n in counts.most_common() if n > 0]
+    if ranked:
+        if len(ranked) > 1 and ranked[0][1] == ranked[1][1]:
+            return None
+        return ranked[0][0]  # type: ignore[return-value]
+    source_region = (source.region or "").upper()
+    return source_region if source_region in REGIONS else None  # type: ignore[return-value]
+
+
+# ---------- Phase 2: event type (sachi2.md S3) ----------
+# Rule table (decision: kept here, not in a YAML file, so the patterns sit next to the code that
+# applies them). Checked in this priority order; the first category with a hit wins.
+# "any": checked in the title and, if the title has no hit at all, in the first sentences.
+# "title": too common in body text ("contact your local distributor", "return on investment"), so
+# they are checked in the title only. Patterns are regular expressions, case-insensitive unless
+# wrapped in (?-i:...).
+
+EVENT_PRIORITY: list[str] = [
+    "acquisition", "regulation_standard", "partnership", "investment_expansion", "product_launch",
+    "appointment", "award", "event",
+]
+_ROLE = (r"(?:president|chief|ceo|cfo|coo|cto|vice president|vp|director|head of|general manager|"
+         r"managing director|chair\w*|leader|manager)")
+EVENT_RULES: dict[str, dict[str, list[str]]] = {
+    "acquisition": {
+        "any": [r"acquires?", r"acquired", r"acquisition of", r"to acquire", r"completes (?:the )?acquisition",
+                r"merger", r"merges? with", r"buys", r"bought"],
+        "title": [r"acquisition"],
+    },
+    "regulation_standard": {
+        "any": [r"regulations?", r"regulatory", r"directive", r"(?:efficiency|energy conservation|energy|emissions?|safety) standards?",
+                r"new standards?", r"final rule", r"proposed rule", r"(?-i:ISO) ?\d{3,5}", r"(?-i:ASME)", r"(?-i:EPA)",
+                r"(?-i:DOE) (?:efficiency|energy|standard|rule|test procedure)\w*"],
+        "title": [r"rules?", r"standards?", r"compliance"],
+    },
+    "partnership": {
+        "any": [r"partners with", r"partnering with", r"partnership", r"strategic alliance", r"collaborat\w+ with",
+                r"collaboration", r"joint venture", r"(?:distribution|distributor|supply|service) agreement",
+                r"agreement with", r"signs? (?:an? )?agreement"],
+        "title": [r"(?:new|exclusive|authori[sz]ed|appoints?|names?|adds?) (?:\w+ )?distributors?", r"agreement",
+                  r"teams up"],
+    },
+    "investment_expansion": {
+        "any": [r"invests?", r"invested", r"to invest", r"investment of", r"\$\s?[\d.,]+\s?(?:million|billion|m|bn) investment",
+                r"expands", r"expanded", r"expansion", r"opens (?:a |an |its |the |new )", r"opening of", r"new facility",
+                r"new plant", r"new factory", r"new headquarters", r"breaks ground", r"broke ground", r"groundbreaking"],
+        "title": [r"investment", r"expand\w*", r"opens(?! registration)", r"plant", r"hiring", r"hires", r"jobs"],
+    },
+    "product_launch": {
+        "any": [r"launch(?:es|ed)?", r"introduc(?:es|ed|ing)", r"unveil(?:s|ed)?", r"debuts?", r"new series",
+                r"now available", r"released", r"rolls out", r"new (?:line|range|generation|family) of"],
+        "title": [r"new\b.{0,40}\b(?:compressors?|dryers?|blowers?|pumps?|series|range)"],
+    },
+    "appointment": {
+        "any": [r"appoints?", r"appointed", r"appointment of", r"joins as", r"promoted to", r"promotes",
+                rf"named (?:as )?(?:the )?(?:new )?{_ROLE}"],
+        # "<PERSON> COO of ...": the scrub can swallow "Appointed" together with the name
+        "title": [rf"names\b.{{0,60}}\b{_ROLE}", r"welcomes", r"new (?:ceo|president|cfo)",
+                  rf"<PERSON>,? (?:as |the )?(?:new )?{_ROLE}"],
+    },
+    "award": {
+        "any": [r"wins", r"won", r"awarded", r"awards?", r"named (?:a |the )?winner", r"recogni[sz]ed",
+                r"honou?red", r"top workplaces?"],
+        "title": [],
+    },
+    "event": {
+        "any": [r"webinar", r"conference", r"trade ?show", r"expo", r"exposition", r"summit", r"exhibition",
+                r"booth", r"symposium"],
+        "title": [r"meeting", r"show", r"workshop"],
+    },
+}
+_EVENT_REGEX: dict[str, tuple[Optional[re.Pattern], Optional[re.Pattern]]] = {}
+for _cat, _rules in EVENT_RULES.items():
+    _any = re.compile(r"(?<!\w)(?:" + "|".join(_rules["any"]) + r")(?!\w)", re.IGNORECASE) if _rules["any"] else None
+    _ttl = re.compile(r"(?<!\w)(?:" + "|".join(_rules["title"]) + r")(?!\w)", re.IGNORECASE) if _rules["title"] else None
+    _EVENT_REGEX[_cat] = (_any, _ttl)
+
+EVENT_SIGNAL_SENTENCES = 3  # how many opening sentences extract_item passes as `text_signals`
+
+
+def _usable_title(title: Optional[str]) -> bool:
+    """A title is usable if something besides placeholders such as <PERSON> remains."""
+    if not title:
+        return False
+    return len(re.findall(r"[A-Za-z]{2,}", re.sub(r"<[A-Z_]+>", " ", title))) >= 2
+
+
+def _event_in(text: str, include_title_rules: bool) -> Optional[str]:
+    for category in EVENT_PRIORITY:
+        any_rx, title_rx = _EVENT_REGEX[category]
+        if any_rx is not None and any_rx.search(text):
+            return category
+        if include_title_rules and title_rx is not None and title_rx.search(text):
+            return category
+    return None
+
+
+def classify_event(title: str | None, text_signals: str) -> EventType | None:
+    """Rule-based event type. The title is checked first (all rules), then the opening sentences (only
+    the rules safe in body text). First category in EVENT_PRIORITY with a hit wins. No hit: 'other' if
+    there is a usable title, None if there is not."""
+    usable = _usable_title(title)
+    if usable:
+        found = _event_in(title or "", include_title_rules=True)
+        if found:
+            return found  # type: ignore[return-value]
+    if text_signals and text_signals.strip():
+        found = _event_in(text_signals, include_title_rules=False)
+        if found:
+            return found  # type: ignore[return-value]
+    return "other" if usable else None
+
+
+def opening_sentences(clean_text: str, title: Optional[str], n: int = EVENT_SIGNAL_SENTENCES) -> str:
+    """The first `n` real sentences of the text (headline repeats and boilerplate skipped)."""
+    title_key = _norm(title) if title else ""
+    out: list[str] = []
+    for paragraph in clean_text.splitlines():
+        for sentence in split_sentences(paragraph):
+            sentence = sentence.strip()
+            if len(sentence) < MIN_FACT_CHARS or BOILERPLATE.search(sentence) or sentence.isupper():
+                continue
+            if title_key and _norm(sentence) in title_key:
+                continue
+            out.append(sentence)
+            if len(out) == n:
+                return " ".join(out)
+    return " ".join(out)
+
+
+# ---------- Phase 2: product (sachi2.md S4) ----------
+
+# Prefixes that look like model codes but are standards, units, periods or pollutants.
+MODEL_CODE_STOP = {
+    "ISO", "IEC", "ASME", "ANSI", "EPA", "DOE", "UL", "CSA", "API", "EN", "DIN", "NFPA", "OSHA", "NEMA",
+    "IP", "IE", "CO", "NOX", "SO", "NO", "PM", "Q", "H", "FY", "COVID", "AD", "BC", "US", "USA", "UK", "EU",
+    "HP", "KW", "MW", "CFM", "SCFM", "ACFM", "PSI", "PSIG", "BAR", "DB", "DBA", "PH", "AC", "DC", "TEFC",
+    "SKU", "NO", "PO", "ID", "NEW", "TOP", "CEO", "CFO", "LLC", "INC", "AB", "AG", "SA", "GMBH",
+}
+_MODEL_CODE = re.compile(r"(?<![\w/-])([A-Z]{1,4})([ -]?)(\d{2,5})([A-Z]{0,3})(?![\w])")
+PRODUCT_CONTEXT_WORDS = {
+    "compressor", "compressors", "dryer", "dryers", "blower", "blowers", "pump", "pumps", "vacuum",
+    "airend", "series", "model", "models", "unit", "units", "range", "vsd", "booster",
+}
+
+
+def _canonical_company(company: Optional[str]) -> Optional[str]:
+    """The canonical name from config/aliases.yaml for `company`, or None if it is not known."""
+    if not company:
+        return None
+
+    def key(name: str) -> str:
+        words = _norm(name).split()
+        while words and words[-1] in _LEGAL_WORDS:
+            words.pop()
+        return " ".join(words)
+
+    wanted = key(company)
+    for canon, variants in _load_aliases().items():
+        if any(key(v) == wanted for v in variants):
+            return canon
+    return None
+
+
+def _product_regex(name: str) -> re.Pattern:
+    letters = re.sub(r"[^A-Za-z]", "", name)
+    case_sensitive = len(letters) <= 4 or letters.isupper()
+    return _term_regex(name, case_sensitive=case_sensitive)
+
+
+def _known_product(title: str, text: str, company: Optional[str]) -> Optional[str]:
+    products = _load_products()
+    canon = _canonical_company(company)
+    if company and canon is None:
+        return None  # unknown company: never attach another company's product to it
+    if canon is not None:
+        pool = [(canon, n) for n in products.get(canon, [])]
+    else:
+        pool = [(c, n) for c, names in products.items() for n in names]
+    in_title = {(c, n) for c, n in pool if _product_regex(n).search(title)}
+    found = in_title or {(c, n) for c, n in pool if _product_regex(n).search(text)}
+    names = {n for _, n in found}
+    owners = {c for c, _ in found}
+    if len(names) == 1 and len(owners) == 1:
+        return next(iter(names))
+    return None  # nothing, or several different products: do not pick one
+
+
+def _company_words(company: Optional[str]) -> set[str]:
+    words: set[str] = set()
+    if not company:
+        return words
+    canon = _canonical_company(company)
+    names = _load_aliases().get(canon, []) if canon else [company]
+    for name in names:
+        words.update(w for w in _norm(name).split() if len(w) >= 3 and w not in _LEGAL_WORDS)
+    return words
+
+
+def _model_code(title: str, text: str, company: Optional[str]) -> Optional[str]:
+    company_words = _company_words(company)
+    context = PRODUCT_CONTEXT_WORDS | {t.lower() for t in _load_keywords()["compressor"] if " " not in t}
+    title_key = _norm(title)
+    body = "\n".join(line for line in text.splitlines() if _norm(line) != title_key)
+    found: dict[str, str] = {}
+    for m in _MODEL_CODE.finditer(title):
+        prefix, sep, digits, tail = m.groups()
+        code = m.group(0)
+        if not 2 <= len(code) <= 12 or prefix in MODEL_CODE_STOP:
+            continue
+        if prefix == "R" and sep == "-":  # refrigerants such as R-410A
+            continue
+        if len(digits) == 4 and digits[:2] in ("19", "20") and not tail:  # a year: "EXPO 2026"
+            continue
+        before = _norm(title[: m.start()]).split()[-3:]
+        after = _norm(title[m.end():]).split()[:3]
+        nearby = set(before + after)
+        if not (nearby & context or nearby & company_words):
+            continue
+        same = re.compile(rf"(?<![\w/-]){re.escape(prefix)}[ -]?{re.escape(digits)}{re.escape(tail)}(?!\w)")
+        if same.search(body):  # stated at least once more in the text
+            found[f"{prefix}{digits}{tail}"] = code
+    if len(found) == 1:
+        return next(iter(found.values()))
+    return None  # none, or several different codes: do not pick one
+
+
+def detect_product(title: str | None, text: str, company: str | None) -> str | None:
+    """A product or series name that the page states, or None. Order: (1) a name from
+    config/products.yaml in title or text; (2) a model code in the title next to the company or a
+    compressor word, and repeated in the text. Never guesses."""
+    title = title or ""
+    text = text or ""
+    return _known_product(title, text, company) or _model_code(title, text, company)
+
+
 # ---------- main entry point ----------
 
 def extract_item(page: FetchedPage, source: Source) -> Item:
@@ -470,18 +798,22 @@ def extract_item(page: FetchedPage, source: Source) -> Item:
     title = redact_names(scrub(raw_title), names)  # Presidio runs on the title in every case
 
     if len(text.strip()) < MIN_TEXT_CHARS:
-        # Empty or very short page: keep what exists, never invent the rest.
+        # Empty or very short page: keep what exists, never invent the rest. Region, event type and
+        # product may still be stated in the title or the few words there are.
+        short_text = redact_names(scrub(text), names) or "" if text.strip() else ""
+        company = company_from_source_name(source.name) if source.type == "competitor" else None
         item = Item(
             id=make_item_id(page.final_url), source_id=source.source_id, source_name=source.name,
             source_type=source.type, source_url=page.final_url, licence_note=source.licence_note,
             collected_at=page.fetched_at, published_at=published_at, title=title,
-            company=company_from_source_name(source.name) if source.type == "competitor" else None,
-            product=None, technology=None, key_facts=[], label=_label(source, title or ""),
+            company=company, product=detect_product(title, short_text, company),
+            technology=None, key_facts=[], label=_label(source, title or ""),
             filter=None, page_fingerprint=empty_page_fingerprint(page.final_url, title),
             personal_data_removed=True, matched_keywords=[], mentions_us_location=False,
-            industrial_hint=False,
+            industrial_hint=False, region=detect_region(source, title, short_text),
+            event_type=classify_event(title, opening_sentences(short_text, title)),
         )
-        text = ""
+        text = short_text = ""
         return item
 
     clean_text = redact_names(scrub(text), names) or ""
@@ -503,10 +835,11 @@ def extract_item(page: FetchedPage, source: Source) -> Item:
         id=make_item_id(page.final_url), source_id=source.source_id, source_name=source.name,
         source_type=source.type, source_url=page.final_url, licence_note=source.licence_note,
         collected_at=page.fetched_at, published_at=published_at, title=title, company=company,
-        product=None, technology=_technology(haystack), key_facts=facts,
+        product=detect_product(title, clean_text, company), technology=_technology(haystack), key_facts=facts,
         label=_label(source, haystack), filter=None, page_fingerprint=make_fingerprint(clean_text),
         personal_data_removed=True, matched_keywords=matched, mentions_us_location=mentions_us,
-        industrial_hint=industrial_hint,
+        industrial_hint=industrial_hint, region=detect_region(source, title, clean_text),
+        event_type=classify_event(title, opening_sentences(clean_text, title)),
     )
     # Drop the text: nothing below this point may keep it.
     text = clean_text = haystack = ""

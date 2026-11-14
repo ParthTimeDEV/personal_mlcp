@@ -1,0 +1,608 @@
+{
+  "run_id": "20261110T090000Z",
+  "generated_at": "2026-11-10T09:30:00Z",
+  "scope": {
+    "technology": "industrial compressors",
+    "region": "US"
+  },
+  "sources": [
+    {
+      "source_id": "alpha_news",
+      "name": "Alpha Air News",
+      "status": "working",
+      "items_collected": 12,
+      "items_passed": 6,
+      "note": null,
+      "kind": "registered",
+      "fallback_for": null
+    },
+    {
+      "source_id": "beta_trade",
+      "name": "Beta Trade Weekly",
+      "status": "working",
+      "items_collected": 9,
+      "items_passed": 4,
+      "note": null,
+      "kind": "registered",
+      "fallback_for": null
+    },
+    {
+      "source_id": "gov_energy",
+      "name": "Energy Office",
+      "status": "working",
+      "items_collected": 3,
+      "items_passed": 1,
+      "note": null,
+      "kind": "registered",
+      "fallback_for": null
+    },
+    {
+      "source_id": "delta_blocked",
+      "name": "Delta Compressors Newsroom",
+      "status": "blocked",
+      "items_collected": 0,
+      "items_passed": 0,
+      "note": "refused by compliance gate: robots_disallow, terms_forbid_automation",
+      "kind": "registered",
+      "fallback_for": null
+    },
+    {
+      "source_id": "gamma_ca",
+      "name": "Gamma Canada Industry",
+      "status": "working",
+      "items_collected": 4,
+      "items_passed": 2,
+      "note": null,
+      "kind": "fallback",
+      "fallback_for": "delta_blocked"
+    },
+    {
+      "source_id": "epsilon_disc",
+      "name": "Epsilon Discovered Blog",
+      "status": "working",
+      "items_collected": 2,
+      "items_passed": 1,
+      "note": null,
+      "kind": "discovered",
+      "fallback_for": null
+    }
+  ],
+  "items": [
+    {
+      "id": "item00000001",
+      "source_id": "alpha_news",
+      "source_name": "Alpha Air News",
+      "source_type": "trade_news",
+      "source_url": "https://alpha_news.example.com/news/1-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-11-03",
+      "title": "Synthetic headline 1: Acme Air product_launch on rotary screw compressor",
+      "company": "Acme Air",
+      "product": "ZX 90",
+      "technology": "rotary screw compressor",
+      "key_facts": [
+        "Synthetic fact 1 about rotary screw compressor rated at 500 cfm."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000001",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "US",
+      "event_type": "product_launch",
+      "story_id": "s1",
+      "via_fallback": false,
+      "fallback_for": null
+    },
+    {
+      "id": "item00000002",
+      "source_id": "beta_trade",
+      "source_name": "Beta Trade Weekly",
+      "source_type": "trade_news",
+      "source_url": "https://beta_trade.example.com/news/2-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-11-04",
+      "title": "Synthetic headline 2: Acme Air product_launch on rotary screw compressor",
+      "company": "Acme Air",
+      "product": null,
+      "technology": "rotary screw compressor",
+      "key_facts": [
+        "Synthetic fact 2 about rotary screw compressor rated at 500 cfm."
+      ],
+      "label": "fact",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000002",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "US",
+      "event_type": "product_launch",
+      "story_id": "s1",
+      "via_fallback": false,
+      "fallback_for": null
+    },
+    {
+      "id": "item00000003",
+      "source_id": "gamma_ca",
+      "source_name": "Gamma Canada Industry",
+      "source_type": "trade_news",
+      "source_url": "https://gamma_ca.example.com/news/3-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-11-05",
+      "title": "Synthetic headline 3: Acme Air product_launch on rotary screw compressor",
+      "company": "Acme Air",
+      "product": null,
+      "technology": "rotary screw compressor",
+      "key_facts": [
+        "Synthetic fact 3 about rotary screw compressor rated at 500 cfm."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000003",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "CA",
+      "event_type": "product_launch",
+      "story_id": "s1",
+      "via_fallback": true,
+      "fallback_for": "delta_blocked"
+    },
+    {
+      "id": "item00000004",
+      "source_id": "alpha_news",
+      "source_name": "Alpha Air News",
+      "source_type": "trade_news",
+      "source_url": "https://alpha_news.example.com/news/4-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-10-20",
+      "title": "Synthetic headline 4: Borealis Vacuum acquisition on vacuum pump",
+      "company": "Borealis Vacuum",
+      "product": null,
+      "technology": "vacuum pump",
+      "key_facts": [
+        "Synthetic fact 4 about vacuum pump rated at 500 cfm."
+      ],
+      "label": "fact",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000004",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "CA",
+      "event_type": "acquisition",
+      "story_id": "s2",
+      "via_fallback": false,
+      "fallback_for": null
+    },
+    {
+      "id": "item00000005",
+      "source_id": "beta_trade",
+      "source_name": "Beta Trade Weekly",
+      "source_type": "trade_news",
+      "source_url": "https://beta_trade.example.com/news/5-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-10-21",
+      "title": "Synthetic headline 5: Borealis Vacuum acquisition on vacuum pump",
+      "company": "Borealis Vacuum",
+      "product": null,
+      "technology": "vacuum pump",
+      "key_facts": [
+        "Synthetic fact 5 about vacuum pump rated at 500 cfm."
+      ],
+      "label": "fact",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000005",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "CA",
+      "event_type": "acquisition",
+      "story_id": "s2",
+      "via_fallback": false,
+      "fallback_for": null
+    },
+    {
+      "id": "item00000006",
+      "source_id": "alpha_news",
+      "source_name": "Alpha Air News",
+      "source_type": "trade_news",
+      "source_url": "https://alpha_news.example.com/news/6-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-09-30",
+      "title": "Synthetic headline 6: Cobalt Blowers investment_expansion on blower",
+      "company": "Cobalt Blowers",
+      "product": null,
+      "technology": "blower",
+      "key_facts": [
+        "Synthetic fact 6 about blower rated at 500 cfm."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000006",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "US",
+      "event_type": "investment_expansion",
+      "story_id": null,
+      "via_fallback": false,
+      "fallback_for": null
+    },
+    {
+      "id": "item00000007",
+      "source_id": "gov_energy",
+      "source_name": "Energy Office",
+      "source_type": "trade_news",
+      "source_url": "https://gov_energy.example.com/news/7-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-09-15",
+      "title": "Synthetic headline 7: A maker regulation_standard on compressed air system",
+      "company": null,
+      "product": null,
+      "technology": "compressed air system",
+      "key_facts": [
+        "Synthetic fact 7 about compressed air system rated at 500 cfm."
+      ],
+      "label": "fact",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000007",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "US",
+      "event_type": "regulation_standard",
+      "story_id": null,
+      "via_fallback": false,
+      "fallback_for": null
+    },
+    {
+      "id": "item00000008",
+      "source_id": "beta_trade",
+      "source_name": "Beta Trade Weekly",
+      "source_type": "trade_news",
+      "source_url": "https://beta_trade.example.com/news/8-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-08-01",
+      "title": "Synthetic headline 8: Dynamo Gas partnership on gas compressor",
+      "company": "Dynamo Gas",
+      "product": null,
+      "technology": "gas compressor",
+      "key_facts": [
+        "Synthetic fact 8 about gas compressor rated at 500 cfm."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000008",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "MX",
+      "event_type": "partnership",
+      "story_id": null,
+      "via_fallback": false,
+      "fallback_for": null
+    },
+    {
+      "id": "item00000009",
+      "source_id": "alpha_news",
+      "source_name": "Alpha Air News",
+      "source_type": "trade_news",
+      "source_url": "https://alpha_news.example.com/news/9-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": null,
+      "title": "Synthetic headline 9: Acme Air appointment on equipment",
+      "company": "Acme Air",
+      "product": null,
+      "technology": null,
+      "key_facts": [
+        "Synthetic fact 9 about equipment rated at 500 cfm."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000009",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": null,
+      "event_type": "appointment",
+      "story_id": null,
+      "via_fallback": false,
+      "fallback_for": null
+    },
+    {
+      "id": "item00000010",
+      "source_id": "epsilon_disc",
+      "source_name": "Epsilon Discovered Blog",
+      "source_type": "trade_news",
+      "source_url": "https://epsilon_disc.example.com/news/10-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-07-11",
+      "title": "Synthetic headline 10: Emerald Hydrogen award on hydrogen compression",
+      "company": "Emerald Hydrogen",
+      "product": null,
+      "technology": "hydrogen compression",
+      "key_facts": [
+        "Synthetic fact 10 about hydrogen compression rated at 500 cfm."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000010",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "US",
+      "event_type": "award",
+      "story_id": null,
+      "via_fallback": false,
+      "fallback_for": null
+    },
+    {
+      "id": "item00000011",
+      "source_id": "alpha_news",
+      "source_name": "Alpha Air News",
+      "source_type": "trade_news",
+      "source_url": "https://alpha_news.example.com/news/11-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-06-02",
+      "title": "Synthetic headline 11: Cobalt Blowers event on blower",
+      "company": "Cobalt Blowers",
+      "product": null,
+      "technology": "blower",
+      "key_facts": [
+        "Synthetic fact 11 about blower rated at 500 cfm."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000011",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "US",
+      "event_type": "event",
+      "story_id": null,
+      "via_fallback": false,
+      "fallback_for": null
+    },
+    {
+      "id": "item00000012",
+      "source_id": "beta_trade",
+      "source_name": "Beta Trade Weekly",
+      "source_type": "trade_news",
+      "source_url": "https://beta_trade.example.com/news/12-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-05-20",
+      "title": "Synthetic headline 12: Dynamo Gas other on gas compressor",
+      "company": "Dynamo Gas",
+      "product": null,
+      "technology": "gas compressor",
+      "key_facts": [
+        "Synthetic fact 12 about gas compressor rated at 500 cfm."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000012",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "MX",
+      "event_type": "other",
+      "story_id": null,
+      "via_fallback": false,
+      "fallback_for": null
+    },
+    {
+      "id": "item00000013",
+      "source_id": "gamma_ca",
+      "source_name": "Gamma Canada Industry",
+      "source_type": "trade_news",
+      "source_url": "https://gamma_ca.example.com/news/13-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-05-01",
+      "title": "Synthetic headline 13: Acme Air news on compressed air treatment",
+      "company": "Acme Air",
+      "product": null,
+      "technology": "compressed air treatment",
+      "key_facts": [
+        "Synthetic fact 13 about compressed air treatment rated at 500 cfm."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000013",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "CA",
+      "event_type": null,
+      "story_id": null,
+      "via_fallback": true,
+      "fallback_for": "delta_blocked"
+    },
+    {
+      "id": "item00000014",
+      "source_id": "alpha_news",
+      "source_name": "Alpha Air News",
+      "source_type": "trade_news",
+      "source_url": "https://alpha_news.example.com/news/14-compressor-story-with-a-fairly-long-slug-for-layout-testing",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-11-10T09:00:00Z",
+      "published_at": "2026-04-18",
+      "title": "Synthetic headline 14: Frost Dryers product_launch on compressed air treatment",
+      "company": "Frost Dryers",
+      "product": null,
+      "technology": "compressed air treatment",
+      "key_facts": [
+        "Synthetic fact 14 about compressed air treatment rated at 500 cfm."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true
+      },
+      "page_fingerprint": "0000000000000000000000000000000000000000000000000000000000000014",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "region": "US",
+      "event_type": "product_launch",
+      "story_id": null,
+      "via_fallback": false,
+      "fallback_for": null
+    }
+  ],
+  "stories": [
+    {
+      "story_id": "s1",
+      "title": "Acme Air launches ZX 90",
+      "company": "Acme Air",
+      "product": "ZX 90",
+      "event_type": "product_launch",
+      "item_ids": [
+        "item00000001",
+        "item00000002",
+        "item00000003"
+      ],
+      "source_ids": [
+        "alpha_news",
+        "beta_trade",
+        "gamma_ca"
+      ],
+      "first_date": "2026-11-03",
+      "last_date": "2026-11-05"
+    },
+    {
+      "story_id": "s2",
+      "title": "Borealis Vacuum acquired",
+      "company": "Borealis Vacuum",
+      "product": null,
+      "event_type": "acquisition",
+      "item_ids": [
+        "item00000004",
+        "item00000005"
+      ],
+      "source_ids": [
+        "alpha_news",
+        "beta_trade"
+      ],
+      "first_date": null,
+      "last_date": null
+    }
+  ],
+  "settings_used": {
+    "regions": [
+      "US",
+      "CA",
+      "MX"
+    ]
+  },
+  "candidates_considered": 4
+}

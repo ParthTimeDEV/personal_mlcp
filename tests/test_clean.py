@@ -123,3 +123,18 @@ def test_other_fields_unchanged_and_order_preserved():
 def test_empty_list():
     result = clean_items([])
     assert result.items == [] and result.duplicates_dropped == 0
+
+# 10. Phase 2: the duplicate with more of region / event_type / product wins, and clean never changes them
+def test_duplicate_with_more_phase2_fields_wins():
+    bare = make_item(key_facts=["a", "b", "c"], technology="rotary screw compressor", collected_at="2026-10-29T08:00:00Z")
+    rich = make_item(region="CA", event_type="product_launch", product="ZT 90", collected_at="2026-10-29T12:00:00Z",
+                     source_url="https://acme.example/news/a/")
+    out = clean_items([bare, rich]).items
+    assert len(out) == 1
+    assert (out[0].region, out[0].event_type, out[0].product) == ("CA", "product_launch", "ZT 90")
+
+
+def test_clean_keeps_phase2_fields_unchanged():
+    item = make_item(region="MX", event_type="acquisition", product="QGD")
+    out = clean_items([item]).items[0]
+    assert (out.region, out.event_type, out.product) == ("MX", "acquisition", "QGD")
