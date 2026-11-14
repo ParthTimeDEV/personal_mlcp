@@ -22,6 +22,17 @@ VettingStatus = Literal["working", "blocked", "needs_permission", "unreachable"]
 ApprovalStatus = Literal["proposed", "approved", "blocked", "needs_permission"]
 Label = Literal["fact", "claim"]
 
+# ---- phase 2 ----
+Region = Literal["US", "CA", "MX"]
+EventType = Literal[
+    "product_launch", "acquisition", "investment_expansion", "partnership",
+    "regulation_standard", "appointment", "award", "event", "other",
+]
+DiscoveryMethod = Literal["seed", "outbound_link", "feed_autodiscovery", "search_api", "manual"]
+CandidateStatus = Literal["new", "auto_vetted", "needs_review", "rejected_by_rules"]
+SourceOrigin = Literal["manual", "discovered"]
+SummaryKind = Literal["registered", "discovered", "fallback"]
+
 KeyFact = Annotated[str, StringConstraints(max_length=200)]
 
 
@@ -67,6 +78,8 @@ class Source(BaseModel):
     licence_note: str = "Public web page; facts and links only"
     crawl_delay: Optional[float] = None  # seconds, from robots.txt if present
     notes: str = ""
+    origin: SourceOrigin = "manual"  # "discovered" = found by the scout engine, never auto-approved
+    trust_score: Optional[int] = None  # 0-100, set for discovered sources
 
 
 # ---------- input side (Ragini -> Sachi) ----------
@@ -157,6 +170,14 @@ class Item(BaseModel):
     mentions_us_location: bool = False
     industrial_hint: bool = False  # a flag only, never a gate
 
+    # phase 2 (all optional, so phase 1 records stay valid)
+    region: Optional[Region] = None  # where the item is about / from; None if unclear. Never guessed.
+    event_type: Optional[EventType] = None
+    story_id: Optional[str] = None  # set by the story clustering step
+    via_fallback: bool = False  # True if collected because another source was refused
+    fallback_for: Optional[str] = None  # source_id of the refused source this item substitutes for
+    watch_matches: list[str] = Field(default_factory=list)  # watchlist names found in title/text
+
 
 class CleanResult(BaseModel):
     items: list[Item]
@@ -177,6 +198,98 @@ class SourceSummary(BaseModel):
     items_collected: int = 0
     items_passed: int = 0
     note: Optional[str] = None  # e.g. why a source was blocked or errored
+    kind: SummaryKind = "registered"
+    fallback_for: Optional[str] = None  # for kind == "fallback": the refused source it stands in for
+
+
+# ---------- phase 2: scout engine, settings, stories ----------
+
+class WatchEntry(BaseModel):
+    """A company, product or technology the scout keeps following, even if its own site is refused."""
+
+    name: str
+    kind: Literal["company", "product", "technology"] = "company"
+    aliases: list[str] = Field(default_factory=list)
+    follow_when_blocked: bool = True  # if its source is refused, look for coverage elsewhere
+
+
+class ScoutSettings(BaseModel):
+    """Everything the frontend can adjust. Defaults reproduce the phase 1 behaviour exactly.
+    Stored as settings/scout_settings.json in the Volume; config/scout_settings.yaml holds the defaults."""
+
+    # scope
+    regions: list[Region] = Field(default_factory=lambda: ["US"])
+    technologies: list[str] = Field(default_factory=list)  # labels from technologies.yaml; empty = all
+    event_types: list[EventType] = Field(default_factory=list)  # empty = all
+    # relevance filter
+    recent_months: int = Field(12, ge=1, le=60)
+    extra_compressor_keywords: list[str] = Field(default_factory=list)
+    excluded_keywords: list[str] = Field(default_factory=list)
+    require_industrial: bool = False
+    # sources
+    source_types: list[SourceType] = Field(default_factory=lambda: ["competitor", "trade_news", "government"])
+    use_discovered_sources: bool = False
+    min_trust_score: int = Field(70, ge=0, le=100)
+    max_items_per_source: int = Field(20, ge=1, le=100)
+    # scout engine
+    discovery_enabled: bool = False
+    fallback_enabled: bool = True
+    fallback_max_items_per_source: int = Field(40, ge=1, le=200)
+    watchlist: list[WatchEntry] = Field(default_factory=list)
+
+
+class Candidate(BaseModel):
+    """A source found by the scout engine. Stored in scout/candidates.json. Never `approved` automatically."""
+
+    candidate_id: str  # first 12 hex chars of sha256(domain)
+    name: str
+    url: str
+    domain: str
+    type_guess: SourceType
+    region: str = "US"
+    discovered_via: DiscoveryMethod
+    discovered_from: Optional[str] = None  # the page, seed file or query that led here
+    discovered_at: str = Field(default_factory=utc_now_iso)
+    access_method: AccessMethod = "rss"
+    feed_url: Optional[str] = None
+    item_url_pattern: Optional[str] = None
+    robots_status: RobotsStatus = "unknown"
+    terms_status: TermsStatus = "unknown"
+    terms_url: Optional[str] = None
+    terms_evidence: Optional[str] = Field(default=None, max_length=200)  # a short quote only
+    public_ok: Optional[bool] = None  # public and logged-out
+    newest_item_date: Optional[str] = None  # ISO date of the newest dated item seen
+    relevance_sample: Optional[float] = Field(default=None, ge=0, le=1)  # share of sampled items that match a compressor keyword
+    trust_score: int = Field(0, ge=0, le=100)
+    trust_reasons: list[str] = Field(default_factory=list)  # one line per point awarded or withheld
+    status: CandidateStatus = "new"
+    usable: bool = False  # True only when every automatic rule passed; still needs a human decision
+    notes: str = ""
+
+
+class CandidateDecision(BaseModel):
+    """A team member's decision on a candidate. Stored in scout/decisions.json. Not an Atlas Copco approval."""
+
+    candidate_id: str
+    decision: Literal["accepted", "rejected"]
+    decided_by: str
+    decided_at: str = Field(default_factory=utc_now_iso)
+    note: str = ""
+
+
+class StoryCluster(BaseModel):
+    """Items from different sources about the same company / product / event."""
+
+    story_id: str
+    headline: str  # title of the earliest item
+    company: Optional[str] = None
+    product: Optional[str] = None
+    event_type: Optional[EventType] = None
+    item_ids: list[str]
+    source_ids: list[str]
+    first_published: Optional[str] = None
+    last_published: Optional[str] = None
+    via_fallback_count: int = 0
 
 
 class OutputEnvelope(BaseModel):
@@ -187,6 +300,10 @@ class OutputEnvelope(BaseModel):
     scope: Scope = Field(default_factory=Scope)
     sources: list[SourceSummary]
     items: list[Item]
+    # phase 2 (optional, so phase 1 outputs stay valid)
+    stories: list[StoryCluster] = Field(default_factory=list)
+    settings_used: Optional[ScoutSettings] = None
+    candidates_considered: int = 0
 
 
 class RunLog(BaseModel):
