@@ -1,7 +1,7 @@
 """Story clustering: items from different sources about the same company / product / event.
 
 Rule-based (no model). Two items join one story when they have the same canonical company AND
-(the same product, OR the same event type with similar titles) AND were published within `window_days`
+(the same product, OR the same specific event type, never "other", with similar titles of 4+ words) AND were published within `window_days`
 of each other. Items without a date can join only on the same product. Groups are transitive (union-find).
 A company or product that no item has is never invented, and different companies are never merged.
 """
@@ -18,6 +18,7 @@ from rapidfuzz import fuzz, utils
 from atlas.models import Item, StoryCluster
 
 TITLE_SIMILARITY = 80
+MIN_TITLE_WORDS = 4
 
 
 def _norm(value: Optional[str]) -> Optional[str]:
@@ -46,8 +47,11 @@ def _related(a: Item, b: Item, window_days: int) -> bool:
         return True
     if da is None or db is None:
         return False  # no date: joins only on the same product
-    if a.event_type is None or a.event_type != b.event_type or not a.title or not b.title:
+    # "other" is the catch-all event type: two items both landing there say nothing about being one story.
+    if a.event_type in (None, "other") or a.event_type != b.event_type or not a.title or not b.title:
         return False
+    if min(len(a.title.split()), len(b.title.split())) < MIN_TITLE_WORDS:
+        return False  # token_set_ratio scores any short title that is a subset of a longer one as 100
     return fuzz.token_set_ratio(a.title, b.title, processor=utils.default_process) >= TITLE_SIMILARITY
 
 

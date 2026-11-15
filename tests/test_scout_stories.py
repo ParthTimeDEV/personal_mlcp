@@ -91,8 +91,9 @@ def test_product_is_never_invented():
     (c,) = build_stories([item(1, product="AX-200"), item(2, "s2", product=None)])[1]
     assert c.product == "AX-200"
     # two different products: the story names neither rather than picking one
-    (c,) = build_stories([item(1, product="AX-200", title="x"),
-                          item(2, "s2", product="BX-9", title="x", published="2026-10-02")])[1]
+    same = "Acme launches two new oil-free compressors"
+    (c,) = build_stories([item(1, product="AX-200", title=same),
+                          item(2, "s2", product="BX-9", title=same, published="2026-10-02")])[1]
     assert c.product is None
 
 
@@ -112,3 +113,15 @@ def test_empty_input_and_inputs_are_not_mutated():
     original = item(1)
     out, _ = build_stories([original])
     assert original.story_id is None and out[0].story_id
+
+
+def test_the_catch_all_event_type_other_never_joins_items():
+    items = [item(1, event="other", title="Sullair America news roundup for the week"),
+             item(2, "s2", event="other", title="Sullair America news roundup for the week")]
+    assert len(build_stories(items)[1]) == 2
+
+
+def test_short_subset_titles_do_not_merge():
+    items = [item(1, event="award", title="Sullair wins award"),
+             item(2, "s2", event="award", title="Sullair wins award for its new service centre in Ohio")]
+    assert len(build_stories(items)[1]) == 2
