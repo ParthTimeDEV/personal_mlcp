@@ -184,3 +184,27 @@ Also looked at and dropped before full vetting: FS-Elliott (feed carries product
 - **Refuse our agent without stating a ban (HTTP 403 / 429):** Plant Engineering, Ingersoll Rand, Business Wire. We did not retry or change our agent. These need a conversation with the owners (or Atlas Copco's own access).
 - **Ingersoll Rand is Atlas Copco's largest US competitor and is not reachable;** worth raising with Atlas Copco: do they have a data licence or a preferred route?
 - **Open for Atlas Copco Legal:** Kaeser's terms (`unknown`), and the whole list before go-live.
+
+
+## Phase 2: automatic-vetter findings (2026-11-15, NOT yet hand-checked)
+
+Produced by `atlas/scout/vet.py` through the Compliance Gate (same identified agent, at least 3 s between requests, metadata only). These are the code's verdicts, not the hand procedure above. Nothing here is in `config/sources.yaml` yet: a row is added only after a person has read the site's terms page and robots.txt and confirmed the verdict. "robots disallow" is the gate's verdict (an explicit rule, or HTTP 401/403 on robots.txt, which the gate treats as disallow-all).
+
+**Passed every automatic rule (`usable`), to be hand-checked first**
+
+| Site | Scope it adds | Terms | Feed | Newest item | Relevance sample | Trust |
+|---|---|---|---|---|---|---|
+| fs-elliott.com | US competitor, oil-free centrifugal | ok | RSS | 2026-11-05 | 0.9 | 95 |
+| burckhardtcompression.com | gas and hydrogen compression | ok | RSS | 2026-11-03 | 0.1 | 85 |
+| sundyne.com | hydrogen and process-gas compressors | ok | RSS | 2026-03-09 | 0.33 | 80 |
+| powerexinc.com | US competitor (vacuum, scroll) | ok | RSS | 2024-02-28 (stale) | 0.1 | 70 |
+
+**Refused by robots.txt (never fetched further):** canadianmanufacturing.com, plant.ca, mromagazine.com, automationmag.com, cme-mec.ca (all Canadian), tuthill.com, kaishanusa.com, fuelcellsworks.com. No usable Canadian English source has been found yet; Canada needs another route (government pages, company sites, or asking a publisher for permission).
+
+**Unreachable for our agent (not retried or bypassed):** fscurtis.com and hankisonintl.com (TLS certificate does not match the host name), zeks.com (HTTP 429 on robots.txt), aerzenusa.com (robots.txt unreadable), howden.com (now redirects to chartindustries.com, another domain), buschusa.com and westport.com (redirect to another domain), rogers-machinery.com (homepage over the 3 MB limit).
+
+**Needs review (terms `unknown` or no usable feed):** gascompressionmagazine.com (dated feed, newest 2026-11-12, no terms page found), fluidpowerjournal.com (dated feed, no terms page found), cganet.com (terms ok, listing without article links), compressortech2.com, compressedairchallenge.org, chfca.ca (feed has no entries), hydropac.com.
+
+**Where the automatic verdict looks wrong**
+- canada.ca (found as `natural-resources.canada.ca`) was marked `forbids_automation`. The quoted sentence is a CAPTCHA notice ("...an automated program (also known as a "robot" or a "bot")"), not a ban on our use. The terms scan is deliberately strict (see `decisions.md`); a person has to read that terms page before rejecting it.
+- Domains under `canada.ca` are treated as one site (registered domain `canada.ca`); only `gc.ca` is in the two-label suffix list.
