@@ -562,7 +562,6 @@
   "stories": [
     {
       "story_id": "s1",
-      "title": "Acme Air launches ZX 90",
       "company": "Acme Air",
       "product": "ZX 90",
       "event_type": "product_launch",
@@ -576,12 +575,13 @@
         "beta_trade",
         "gamma_ca"
       ],
-      "first_date": "2026-11-03",
-      "last_date": "2026-11-05"
+      "headline": "Acme Air launches ZX 90",
+      "first_published": "2026-11-03",
+      "last_published": "2026-11-05",
+      "via_fallback_count": 0
     },
     {
       "story_id": "s2",
-      "title": "Borealis Vacuum acquired",
       "company": "Borealis Vacuum",
       "product": null,
       "event_type": "acquisition",
@@ -593,8 +593,10 @@
         "alpha_news",
         "beta_trade"
       ],
-      "first_date": null,
-      "last_date": null
+      "headline": "Borealis Vacuum acquired",
+      "first_published": null,
+      "last_published": null,
+      "via_fallback_count": 0
     }
   ],
   "settings_used": {

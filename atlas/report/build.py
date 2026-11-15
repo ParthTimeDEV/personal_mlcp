@@ -348,7 +348,7 @@ def compute(envelope: OutputEnvelope) -> ReportData:
         members = [items_by_id[i] for i in story.item_ids if i in items_by_id] or \
                   [i for i in envelope.items if i.story_id == story.story_id]
         story_rows.append(StoryRow(
-            story_id=story.story_id, title=story.title or (members[0].title if members and members[0].title else "(no title)"),
+            story_id=story.story_id, title=story.headline or (members[0].title if members and members[0].title else "(no title)"),
             company=story.company or NOT_STATED, event_type=_event_text(story.event_type),
             source_names=sorted(name_of(i) for i in ids), item_count=len(members),
             fallback_items=sum(1 for m in members if m.via_fallback),
