@@ -1,0 +1,70 @@
+# Discovery seeds (Phase 2, Ragini). Starting points for the scout engine, NOT approvals.
+#
+# Every entry is `verified: false`: the homepages below were compiled from general knowledge of the compressed
+# air, vacuum, blower, gas/hydrogen compression and standards sectors and have not been opened one by one.
+# A wrong or dead address simply fails the automatic vetting (atlas/scout/vet.py); that is expected.
+# The vetter decides whether a seed is usable, and only Atlas Copco approves sources.
+#
+# Fields: name, url (homepage), type_guess (competitor | trade_news | government), region (US | CA | MX),
+#         why, verified (always false until a person has hand-checked it), association (optional, true for
+#         industry associations; they earn trust points as associations).
+#
+# Not included on purpose: sites already in config/sources.yaml (including the blocked ones: CAGI,
+# PR Newswire, Plant Services, Plant Engineering, Ingersoll Rand, Business Wire). Those need permission first.
+# Atlas Copco's own sites are left out too: the client's newsroom adds nothing to a market study.
+# Endeavor Business Media titles (Hydraulics & Pneumatics, Chemical Processing, ...) are left out because
+# their group terms forbid automated access (see docs/source_vetting.md, Plant Services).
+
+# ---------- US compressor makers and distributors (competitors) ----------
+- {name: FS-Curtis, url: "https://www.fscurtis.com/", type_guess: competitor, region: US, verified: false, why: "US rotary screw and reciprocating compressor maker (FS-Elliott group)"}
+- {name: FS-Elliott, url: "https://www.fs-elliott.com/", type_guess: competitor, region: US, verified: false, why: "Oil-free centrifugal compressors, Pennsylvania"}
+- {name: Elliott Group, url: "https://www.elliott-turbo.com/", type_guess: competitor, region: US, verified: false, why: "Large centrifugal compressors and turbomachinery, Pennsylvania"}
+- {name: Kaishan USA, url: "https://www.kaishanusa.com/", type_guess: competitor, region: US, verified: false, why: "Rotary screw compressors sold in the US"}
+- {name: Sullivan-Palatek, url: "https://www.sullivan-palatek.com/", type_guess: competitor, region: US, verified: false, why: "US maker of portable and stationary air compressors, Indiana"}
+- {name: Powerex, url: "https://www.powerexinc.com/", type_guess: competitor, region: US, verified: false, why: "Scroll and reciprocating compressors and vacuum, Ohio"}
+- {name: Rogers Machinery, url: "https://www.rogers-machinery.com/", type_guess: competitor, region: US, verified: false, why: "Large US compressor manufacturer and distributor, Oregon"}
+- {name: Howden, url: "https://www.howden.com/", type_guess: competitor, region: US, verified: false, why: "Compressors and blowers for process industries; global group with US operations"}
+
+# ---------- air treatment (dryers, filters) ----------
+- {name: Hankison, url: "https://www.hankisonintl.com/", type_guess: competitor, region: US, verified: false, why: "Compressed air dryers and filters, Pennsylvania"}
+- {name: Zeks Air Drier, url: "https://www.zeks.com/", type_guess: competitor, region: US, verified: false, why: "Compressed air dryers, Pennsylvania"}
+- {name: Mikropor America, url: "https://www.mikropor.com/", type_guess: competitor, region: US, verified: false, why: "Air dryers and filtration"}
+- {name: Donaldson, url: "https://www.donaldson.com/", type_guess: competitor, region: US, verified: false, why: "Industrial filtration including compressed air filters; has a newsroom"}
+
+# ---------- blowers and vacuum ----------
+- {name: Aerzen USA, url: "https://www.aerzenusa.com/", type_guess: competitor, region: US, verified: false, why: "Rotary lobe blowers and screw compressors, Pennsylvania"}
+- {name: Tuthill, url: "https://www.tuthill.com/", type_guess: competitor, region: US, verified: false, why: "Blowers and vacuum pumps, Illinois"}
+- {name: Busch Vacuum Solutions US, url: "https://www.buschusa.com/", type_guess: competitor, region: US, verified: false, why: "Vacuum pumps and blowers for industry"}
+- {name: Leybold, url: "https://www.leybold.com/", type_guess: competitor, region: US, verified: false, why: "Vacuum pumps and systems; global group with US sites"}
+- {name: Pfeiffer Vacuum, url: "https://www.pfeiffer-vacuum.com/", type_guess: competitor, region: US, verified: false, why: "Vacuum pumps and systems; global group with US sites"}
+
+# ---------- gas and hydrogen compression ----------
+- {name: Burckhardt Compression, url: "https://www.burckhardtcompression.com/", type_guess: competitor, region: US, verified: false, why: "Reciprocating gas compressors including hydrogen; US subsidiary"}
+- {name: Hydro-Pac, url: "https://www.hydropac.com/", type_guess: competitor, region: US, verified: false, why: "High-pressure gas and hydrogen compressors, Pennsylvania"}
+- {name: PDC Machines, url: "https://www.pdcmachines.com/", type_guess: competitor, region: US, verified: false, why: "Hydrogen compressors, Pennsylvania"}
+- {name: Sundyne, url: "https://www.sundyne.com/", type_guess: competitor, region: US, verified: false, why: "Compressors and pumps for hydrogen and process gas, Colorado"}
+- {name: Westport Fuel Systems, url: "https://www.westport.com/", type_guess: competitor, region: CA, verified: false, why: "Gas fuel and hydrogen systems, Vancouver"}
+
+# ---------- trade publications ----------
+- {name: Canadian Manufacturing, url: "https://www.canadianmanufacturing.com/", type_guess: trade_news, region: CA, verified: false, why: "Canadian manufacturing news (English)"}
+- {name: Plant magazine (Canada), url: "https://www.plant.ca/", type_guess: trade_news, region: CA, verified: false, why: "Canadian plant operations and maintenance news (English)"}
+- {name: MRO Magazine (Canada), url: "https://www.mromagazine.com/", type_guess: trade_news, region: CA, verified: false, why: "Canadian maintenance, repair and operations news (English)"}
+- {name: Automation magazine (Canada), url: "https://www.automationmag.com/", type_guess: trade_news, region: CA, verified: false, why: "Canadian automation and manufacturing news (English)"}
+- {name: Fluid Power Journal, url: "https://fluidpowerjournal.com/", type_guess: trade_news, region: US, verified: false, why: "Fluid power and pneumatics trade news"}
+- {name: Compressortech2, url: "https://www.compressortech2.com/", type_guess: trade_news, region: US, verified: false, why: "Trade magazine for gas compression"}
+- {name: Gas Compression Magazine, url: "https://www.gascompressionmagazine.com/", type_guess: trade_news, region: US, verified: false, why: "Natural gas compression industry news"}
+- {name: Fuel Cells Works, url: "https://fuelcellsworks.com/", type_guess: trade_news, region: US, verified: false, why: "Hydrogen and fuel cell industry news (hydrogen compression context)"}
+
+# ---------- associations and non-profits ----------
+- {name: Compressed Gas Association, url: "https://www.cganet.com/", type_guess: trade_news, region: US, verified: false, association: true, why: "Industry association for compressed gases and equipment"}
+- {name: Gas Machinery Research Council, url: "https://www.gmrc.org/", type_guess: trade_news, region: US, verified: false, association: true, why: "Gas compression research association"}
+- {name: Compressed Air Challenge, url: "https://www.compressedairchallenge.org/", type_guess: trade_news, region: US, verified: false, association: true, why: "Non-profit on compressed air system efficiency"}
+- {name: Canadian Hydrogen and Fuel Cell Association, url: "https://www.chfca.ca/", type_guess: trade_news, region: CA, verified: false, association: true, why: "Canadian hydrogen industry association"}
+- {name: Canadian Manufacturers and Exporters, url: "https://cme-mec.ca/", type_guess: trade_news, region: CA, verified: false, association: true, why: "Canadian manufacturing association"}
+- {name: Association for Manufacturing Technology, url: "https://www.amtonline.org/", type_guess: trade_news, region: US, verified: false, association: true, why: "US manufacturing technology association"}
+
+# ---------- government and standards (US and Canada) ----------
+- {name: Natural Resources Canada, url: "https://natural-resources.canada.ca/", type_guess: government, region: CA, verified: false, why: "Canadian federal energy and industry policy news"}
+- {name: US Environmental Protection Agency, url: "https://www.epa.gov/", type_guess: government, region: US, verified: false, why: "Air emissions and industrial regulation news"}
+- {name: ENERGY STAR, url: "https://www.energystar.gov/", type_guess: government, region: US, verified: false, why: "Energy efficiency programs for industrial equipment"}
+- {name: ASME, url: "https://www.asme.org/", type_guess: trade_news, region: US, verified: false, association: true, why: "Standards body for pressure equipment and compressors"}

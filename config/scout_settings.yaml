@@ -1,0 +1,28 @@
+# Default ScoutSettings (atlas/models.py). The frontend saves changes to settings/scout_settings.json in the
+# Volume; these values are used when nothing has been saved. Every key is optional; an omitted key takes
+# the default from the model. The defaults below reproduce the phase 1 behaviour.
+
+regions: [US]
+technologies: []              # empty = all labels in config/technologies.yaml
+event_types: []               # empty = all
+recent_months: 12
+extra_compressor_keywords: []
+excluded_keywords: []
+require_industrial: false
+source_types: [competitor, trade_news, government]
+use_discovered_sources: false
+min_trust_score: 70
+max_items_per_source: 20
+discovery_enabled: false
+fallback_enabled: true
+fallback_max_items_per_source: 40
+
+# Companies / products to keep following even when their own site refuses us.
+# Aliases are matched whole-word, case-insensitively. Sachi/Ragini may add entries; do not remove.
+watchlist:
+  - {name: Ingersoll Rand, kind: company, aliases: [Ingersoll-Rand, "Ingersoll Rand Inc."]}
+  - {name: Kaeser Compressors, kind: company, aliases: [Kaeser, Kaeser Kompressoren]}
+  - {name: Sullair, kind: company, aliases: [Hitachi Global Air Power]}
+  - {name: Quincy Compressor, kind: company, aliases: [Quincy Compressors]}
+  - {name: Gardner Denver, kind: company, aliases: [Gardner Denver Holdings]}
+  - {name: Hertz Kompressoren, kind: company, aliases: []}

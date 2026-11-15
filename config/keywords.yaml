@@ -1,5 +1,7 @@
 # Relevance-filter vocabulary. Matching: case-insensitive, whole word / whole phrase.
 # Edit by adding entries; do not rename the three top-level keys.
+# Phase 2: new technology terms go under `compressor` (agreed route in sachi2.md S1).
+# `ca_locations` and `mx_locations` are new lists (filter.py reads them; told Nikhil).
 
 compressor:
   - compressor
@@ -20,6 +22,36 @@ compressor:
   - cfm
   - variable speed drive
   - vsd
+  # Phase 2: air treatment
+  - desiccant dryer
+  - refrigerated dryer
+  - membrane dryer
+  - coalescing filter
+  - aftercooler
+  - compressed air filter
+  # Phase 2: blowers
+  - rotary lobe blower
+  - centrifugal blower
+  - turbo blower
+  - screw blower
+  - positive displacement blower
+  # Phase 2: vacuum pumps
+  - vacuum pump
+  - vacuum pumps
+  - rotary vane
+  - dry screw vacuum
+  - claw vacuum
+  - liquid ring
+  # Phase 2: gas compressors and hydrogen
+  - gas compressor
+  - gas compressors
+  - gas compression
+  - natural gas compressor
+  - biogas compressor
+  - CO2 compressor
+  - nitrogen booster
+  - hydrogen compressor
+  - hydrogen compression
 
 industrial:
   - industrial
@@ -58,3 +90,111 @@ us_locations:
   - Rock Hill
   - Michigan City
   - Bay Minette
+
+# Phase 2: Canada. Full names only. Province abbreviations (ON, QC, BC...) count only directly after a
+# city and a comma ("Burlington, ON"); extract.py handles that rule, so they are not listed here.
+ca_locations:
+  - Canada
+  - Canadian
+  - Ontario
+  - Quebec
+  - Québec
+  - British Columbia
+  - Alberta
+  - Manitoba
+  - Saskatchewan
+  - Nova Scotia
+  - New Brunswick
+  - Newfoundland
+  - Toronto
+  - Montreal
+  - Montréal
+  - Vancouver
+  - Calgary
+  - Edmonton
+  - Ottawa
+  - Winnipeg
+  - Mississauga
+  - Brampton
+
+# Phase 2: Mexico (English-language sources only; parent2.md open question 3).
+mx_locations:
+  - Mexico
+  - México
+  - Mexican
+  - Mexico City
+  - Monterrey
+  - Guadalajara
+  - Querétaro
+  - Queretaro
+  - Nuevo León
+  - Nuevo Leon
+  - Jalisco
+  - Guanajuato
+  - Coahuila
+  - Chihuahua
+  - Sonora
+  - Baja California
+  - Tijuana
+  - Saltillo
+  - Puebla
+
+# Places outside North America (extract.py, region rule only; filter.py does not read this list).
+# When the title + text name these at least as often as the most-named North American region, the item
+# is about somewhere else, so region stays null instead of falling back to the source's own region
+# (seen live: Atlas Copco buying a company in Portugal, a Fluke release dated Eindhoven, Netherlands).
+other_locations:
+  - Europe
+  - European
+  - Portugal
+  - Portuguese
+  - Spain
+  - Spanish
+  - Germany
+  - German
+  - France
+  - Italy
+  - Italian
+  - Netherlands
+  - Dutch
+  - Belgium
+  - Sweden
+  - Swedish
+  - Norway
+  - Denmark
+  - Finland
+  - Poland
+  - Austria
+  - Switzerland
+  - Swiss
+  - United Kingdom
+  - UK
+  - Britain
+  - British
+  - England
+  - Ireland
+  - Turkey
+  - China
+  - Chinese
+  - Japan
+  - Korea
+  - India
+  - Australia
+  - Brazil
+  - Argentina
+  - Chile
+  - Colombia
+  - Peru
+  - South Africa
+  - Saudi Arabia
+  - United Arab Emirates
+  - UAE
+  - Singapore
+  - Malaysia
+  - Thailand
+  - Vietnam
+  - Indonesia
+  - Taiwan
+  - Asia
+  - Africa
+  - Middle East

@@ -340,3 +340,214 @@ def test_all_caps_labels_are_not_key_facts():
     body = BODY + "<p>OUR DIGITAL PARTNERS</p><p>THE NEW OIL-FREE COMPRESSOR IS HERE TODAY FOR ALL FACTORIES</p>"
     item = extract_item(make_page(make_html(body=body)), make_source())
     assert not any(f.isupper() for f in item.key_facts)
+
+
+# ======================================================================================
+# Phase 2 (sachi2.md S1 to S5): region, event type, product, new technology labels.
+# Synthetic text only.
+# ======================================================================================
+
+from atlas.extract import _technology, classify_event, detect_product, detect_region  # noqa: E402
+
+
+# ---------- region ----------
+
+@pytest.mark.parametrize("title,text,expected", [
+    ("Acme opens compressor plant in Houston, Texas", "The Ohio site will also grow.", "US"),
+    ("Acme opens compressor plant in Toronto", "The Ontario site serves Canadian customers.", "CA"),
+    ("Acme opens compressor plant in Monterrey", "Production for Mexico starts in Nuevo León.", "MX"),
+])
+def test_region_us_canada_mexico(title, text, expected):
+    assert detect_region(make_source(region="US"), title, text) == expected
+
+
+def test_region_tie_is_none():
+    assert detect_region(make_source(region="US"), "Plants in Toronto and Houston", "") is None
+
+
+def test_region_no_location_uses_source_region_only_if_based_there():
+    title, text = "How to size a compressor", "Size the unit to the demand of the shop."
+    assert detect_region(make_source(region="CA"), title, text) == "CA"
+    assert detect_region(make_source(region="global"), title, text) is None
+
+
+def test_region_never_defaults_to_us():
+    assert detect_region(make_source(region="NA"), "Compressor tips", "No place is named here.") is None
+
+
+def test_region_abbreviation_rule():
+    src = make_source(region="global")
+    # a province code counts only directly after a place name and a comma, and is case-sensitive
+    assert detect_region(src, "Acme expands its plant in Burlington, ON", "") == "CA"
+    assert detect_region(src, "Turn the compressor ON before the shift", "Keep it on all day.") is None
+    assert detect_region(src, "Acme opens site in Rock Hill, SC", "") == "US"
+
+
+def test_region_phrases_that_are_not_the_country():
+    src = make_source(region="global")
+    assert detect_region(src, "North American compressor sales grow", "") is None
+    assert detect_region(src, "Acme opens a plant in New Mexico", "") == "US"
+    assert detect_region(src, "Acme opens a plant in Baja California", "") == "MX"
+
+
+def test_region_outside_north_america_is_none_not_the_source_region():
+    # seen live on 15 Nov: both were tagged US because the source is US-based
+    src = make_source(region="US")
+    assert detect_region(src, "Atlas Copco Group Acquires Compressed Air Sales and Service Company in Central Portugal",
+                         "The company is based in Agueda, Portugal.") is None
+    assert detect_region(src, "Fluke Unveils Its Most Powerful Acoustic Imagers",
+                         "Eindhoven, Netherlands - Fluke introduced two new acoustic imagers.") is None
+    # a foreign mention outnumbered by US places keeps the US
+    assert detect_region(src, "Swedish group opens compressor plant in Texas",
+                         "The plant in Houston, Texas will serve Ohio customers.") == "US"
+
+
+def test_title_counts_double():
+    # one Canadian hit in the title (2) beats one US hit in the text (1)
+    assert detect_region(make_source(region="global"), "Acme opens plant in Ontario", "It ships to Texas.") == "CA"
+
+
+# ---------- event type ----------
+
+@pytest.mark.parametrize("title,expected", [
+    ("Acme acquires Beta Vacuum", "acquisition"),
+    ("DOE efficiency standards for air compressors take effect", "regulation_standard"),
+    ("Acme partners with Gamma Air on service", "partnership"),
+    ("Acme invests $40 million to expand compressor plant", "investment_expansion"),
+    ("Acme launches oil-free scroll compressor", "product_launch"),
+    ("Acme appoints new president of its air division", "appointment"),
+    ("Acme wins 2026 energy innovation award", "award"),
+    ("Join our webinar on compressed air leaks", "event"),
+])
+def test_event_one_per_category(title, expected):
+    assert classify_event(title, "") == expected
+
+
+def test_event_priority_order():
+    # acquisition beats product launch; regulation beats partnership; partnership beats expansion
+    assert classify_event("Acme acquires Beta and launches a new dryer", "") == "acquisition"
+    assert classify_event("Acme partners with Beta on ISO 8573 testing", "") == "regulation_standard"
+    assert classify_event("Acme and Beta form joint venture to expand plant", "") == "partnership"
+
+
+def test_event_title_first_then_opening_sentences():
+    assert classify_event("Acme news for October", "Acme acquired a blower maker in Ohio.") == "acquisition"
+    assert classify_event("Acme launches dryer", "Acme acquired a blower maker in Ohio.") == "product_launch"
+
+
+def test_event_cases_seen_in_real_titles():
+    # from the 30 Oct demo run: a distributor meeting is an event, not a partnership
+    assert classify_event("Hertz Kompressoren Unites Global Distributors at International Distributor Meeting 2026", "") \
+        == "event"
+    assert classify_event("Acme appoints new distributor for Ontario", "") == "partnership"
+    # the scrub can swallow "Appointed" with the name; a role right after <PERSON> is still an appointment
+    assert classify_event("<PERSON> COO of <PERSON> and President of <PERSON>", "") == "appointment"
+
+
+def test_event_no_match_is_other_and_no_title_is_none():
+    assert classify_event("Five tips for compressor maintenance", "Check filters every month.") == "other"
+    assert classify_event(None, "Check filters every month.") is None
+    assert classify_event("<PERSON>", "") is None
+
+
+def test_event_title_only_words_ignored_in_body():
+    # "distributor" and "investment" are too common in body text to decide the type
+    body = "Contact your local distributor. A great return on investment."
+    assert classify_event(None, body) is None
+    assert classify_event("Compressor buying guide", body) == "other"
+
+
+# ---------- product ----------
+
+def test_product_known_series_from_config():
+    assert detect_product("Ingersoll Rand adds Next Generation R-Series models", "", "Ingersoll Rand") \
+        == "Next Generation R-Series"
+    assert detect_product("Quincy updates the QGD line", "", "Quincy Compressor LLC") == "QGD"
+
+
+def test_product_model_code_seen_twice():
+    title = "Sullair OFE1550 oil-free compressor wins award"
+    assert detect_product(title, "The OFE1550 delivers class 0 air.", "Sullair") == "OFE1550"
+    assert detect_product("Acme ZR 160 compressor ships", "Each ZR-160 unit is tested.", None) == "ZR 160"
+
+
+def test_product_model_code_seen_once_is_none():
+    assert detect_product("Sullair OFE1550 oil-free compressor wins award", "No code repeated here.", "Sullair") is None
+
+
+def test_product_nothing_is_none():
+    assert detect_product("Compressor maintenance tips", "Change the filter.", "Sullair") is None
+    assert detect_product(None, "", None) is None
+
+
+def test_product_never_invented():
+    # a year, a standard and a refrigerant look like codes but are not products
+    assert detect_product("Acme compressor at IMTS 2026", "IMTS 2026 opens soon.", "Acme") is None
+    assert detect_product("New ISO 8573 compressor guide", "ISO 8573 sets classes.", None) is None
+    assert detect_product("Dryer compressor uses R-410A", "R-410A is common.", None) is None
+    # another company's product is never attached to a known company
+    assert detect_product("Sullair compared with Next Generation R-Series", "", "Sullair") is None
+    # two different products named: do not pick one
+    assert detect_product("Quincy QGD and QSI updates", "", "Quincy Compressor") is None
+    # a code with no compressor word or company next to it
+    assert detect_product("Route AB 123 closed for works", "AB 123 reopens.", None) is None
+
+
+# ---------- technology labels ----------
+
+@pytest.mark.parametrize("text,label", [
+    ("A new hydrogen compressor for refuelling stations", "hydrogen compression"),
+    ("A biogas compressor for farms", "gas compressor"),
+    ("A new nitrogen booster for labs", "gas compressor"),
+    ("Dry screw vacuum pumps for chemical plants", "vacuum pump"),
+    ("A liquid ring unit for paper mills", "vacuum pump"),
+    ("Rotary lobe blower for wastewater aeration", "blower"),
+    ("Turbo blowers cut aeration energy", "blower"),
+    ("A desiccant dryer and coalescing filter package", "compressed air treatment"),
+    ("An aftercooler for every unit", "compressed air treatment"),
+])
+def test_new_technology_labels(text, label):
+    assert _technology(text) == label
+
+
+def test_existing_compressor_labels_unchanged():
+    assert _technology("oil-free rotary screw compressor with a refrigerated dryer") == "oil-free rotary screw compressor"
+
+
+# ---------- wired into extract_item ----------
+
+CA_BODY = f"""
+<p>Acme Compressors announced it will expand its blower plant in Burlington, Ontario, adding 40 jobs.</p>
+<p>The plant builds the ZT 90 rotary lobe blower for wastewater customers across Canada.</p>
+<p>Each ZT 90 unit is tested before it ships to customers in Toronto and Calgary.</p>
+<p>Unrelated paragraph: {SECRET_PHRASE} while the office kept working on routine filing tasks.</p>
+"""
+
+
+def test_extract_item_fills_phase2_fields():
+    html = make_html(title="Acme expands ZT 90 blower plant in Ontario", body=CA_BODY)
+    item = extract_item(make_page(html), make_source(region="US"))
+    assert item.region == "CA"
+    assert item.event_type == "investment_expansion"
+    assert item.product == "ZT 90"
+    assert item.technology == "blower"
+    dump = item.model_dump_json()
+    assert SECRET_PHRASE not in dump and "lavender committee" not in dump
+
+
+def test_extract_item_unknowns_stay_null():
+    body = "<p>" + "Compressed air systems need regular checks of filters and drains. " * 6 + "</p>"
+    html = make_html(title="<b>", body=body)
+    item = extract_item(make_page(html, listing_title=None), make_source(region="global", type="trade_news",
+                                                                         name="Trade Weekly"))
+    assert item.region is None
+    assert item.product is None
+
+
+def test_short_page_phase2_fields_from_title():
+    html = "<html><head><title>Acme launches dryer in Toronto</title></head><body><p>Tiny.</p></body></html>"
+    item = extract_item(make_page(html), make_source(region="US"))
+    assert item.key_facts == []
+    assert item.region == "CA"
+    assert item.event_type == "product_launch"
+    assert item.product is None

@@ -1,0 +1,641 @@
+{
+  "run_id": "20261029T101500Z",
+  "generated_at": "2026-10-29T10:30:00Z",
+  "scope": {
+    "technology": "industrial compressors",
+    "region": "US+CA"
+  },
+  "sources": [
+    {
+      "source_id": "demo_trade_news",
+      "name": "Demo Compressed Air Weekly",
+      "status": "working",
+      "items_collected": 12,
+      "items_passed": 6,
+      "note": null,
+      "kind": "registered",
+      "fallback_for": null
+    },
+    {
+      "source_id": "demo_maker_news",
+      "name": "Borealis Air Newsroom",
+      "status": "working",
+      "items_collected": 5,
+      "items_passed": 1,
+      "note": null,
+      "kind": "registered",
+      "fallback_for": null
+    },
+    {
+      "source_id": "demo_energy_gov",
+      "name": "Demo Energy Department",
+      "status": "working",
+      "items_collected": 4,
+      "items_passed": 2,
+      "note": null,
+      "kind": "registered",
+      "fallback_for": null
+    },
+    {
+      "source_id": "disc_0a1b2c3d4e5f",
+      "name": "Northern Vacuum Review",
+      "status": "working",
+      "items_collected": 6,
+      "items_passed": 1,
+      "note": "discovered by the scout, trust score 82; not approved by Atlas Copco",
+      "kind": "discovered",
+      "fallback_for": null
+    },
+    {
+      "source_id": "demo_summit_news",
+      "name": "Summit Compressors Newsroom",
+      "status": "blocked",
+      "items_collected": 0,
+      "items_passed": 0,
+      "note": "refused by compliance gate: terms_forbid_automation, vetting_blocked",
+      "kind": "registered",
+      "fallback_for": null
+    },
+    {
+      "source_id": "fallback_demo_summit_news",
+      "name": "Coverage of Summit Compressors Newsroom (switched)",
+      "status": "working",
+      "items_collected": 1,
+      "items_passed": 1,
+      "note": "switched because refused by the compliance gate; followed Summit Compressors; 1 item(s) from 1 other source(s): Demo Compressed Air Weekly",
+      "kind": "fallback",
+      "fallback_for": "demo_summit_news"
+    }
+  ],
+  "items": [
+    {
+      "id": "0fc6f2c9b542",
+      "source_id": "demo_trade_news",
+      "source_name": "Demo Compressed Air Weekly",
+      "source_type": "trade_news",
+      "source_url": "https://demo-trade.example/borealis-bx200",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-10-29T10:15:00Z",
+      "published_at": "2026-10-12",
+      "title": "Borealis Air launches BX-200 oil-free compressor",
+      "company": "Borealis Air",
+      "product": "BX-200",
+      "technology": "rotary screw compressors",
+      "key_facts": [
+        "The BX-200 delivers 250 kW at 8 bar.",
+        "Shipping starts in January."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true,
+        "reasons": [],
+        "date_missing": false
+      },
+      "page_fingerprint": "0fc6f2c9b5420fc6f2c9b5420fc6f2c9b5420fc6f2c9b5420fc6f2c9b5420000",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "mentions_us_location": true,
+      "industrial_hint": true,
+      "region": "US",
+      "event_type": "product_launch",
+      "story_id": "49e51a42311b",
+      "via_fallback": false,
+      "fallback_for": null,
+      "watch_matches": []
+    },
+    {
+      "id": "4db8111e4fb1",
+      "source_id": "demo_maker_news",
+      "source_name": "Borealis Air Newsroom",
+      "source_type": "competitor",
+      "source_url": "https://borealis-air.example/bx200-release",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-10-29T10:15:00Z",
+      "published_at": "2026-10-13",
+      "title": "Introducing the BX-200: oil-free compression for food plants",
+      "company": "Borealis Air",
+      "product": "BX-200",
+      "technology": "rotary screw compressors",
+      "key_facts": [
+        "The BX-200 is certified to ISO 8573-1 Class 0."
+      ],
+      "label": "fact",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true,
+        "reasons": [],
+        "date_missing": false
+      },
+      "page_fingerprint": "4db8111e4fb14db8111e4fb14db8111e4fb14db8111e4fb14db8111e4fb10000",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "mentions_us_location": true,
+      "industrial_hint": true,
+      "region": "US",
+      "event_type": "product_launch",
+      "story_id": "49e51a42311b",
+      "via_fallback": false,
+      "fallback_for": null,
+      "watch_matches": []
+    },
+    {
+      "id": "d0fa70a152da",
+      "source_id": "demo_energy_gov",
+      "source_name": "Demo Energy Department",
+      "source_type": "government",
+      "source_url": "https://demo-energy.example/efficiency-rule",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-10-29T10:15:00Z",
+      "published_at": "2026-10-08",
+      "title": "Department proposes new compressor efficiency standard",
+      "company": "Demo Energy Department",
+      "product": null,
+      "technology": null,
+      "key_facts": [
+        "The proposed rule covers rotary compressors from 15 to 200 hp."
+      ],
+      "label": "fact",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true,
+        "reasons": [],
+        "date_missing": false
+      },
+      "page_fingerprint": "d0fa70a152dad0fa70a152dad0fa70a152dad0fa70a152dad0fa70a152da0000",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "mentions_us_location": true,
+      "industrial_hint": true,
+      "region": "US",
+      "event_type": "regulation_standard",
+      "story_id": "1ff5064c96ee",
+      "via_fallback": false,
+      "fallback_for": null,
+      "watch_matches": []
+    },
+    {
+      "id": "d983211fcfd4",
+      "source_id": "demo_trade_news",
+      "source_name": "Demo Compressed Air Weekly",
+      "source_type": "trade_news",
+      "source_url": "https://demo-trade.example/cedar-acquires-delta",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-10-29T10:15:00Z",
+      "published_at": "2026-09-30",
+      "title": "Cedar Pumps acquires Delta Vacuum",
+      "company": "Cedar Pumps",
+      "product": null,
+      "technology": "vacuum pumps",
+      "key_facts": [
+        "The deal adds dry screw vacuum pumps to Cedar's range."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true,
+        "reasons": [],
+        "date_missing": false
+      },
+      "page_fingerprint": "d983211fcfd4d983211fcfd4d983211fcfd4d983211fcfd4d983211fcfd40000",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "mentions_us_location": true,
+      "industrial_hint": true,
+      "region": "US",
+      "event_type": "acquisition",
+      "story_id": "84ec3f5c6026",
+      "via_fallback": false,
+      "fallback_for": null,
+      "watch_matches": []
+    },
+    {
+      "id": "7517f44659ea",
+      "source_id": "disc_0a1b2c3d4e5f",
+      "source_name": "Northern Vacuum Review",
+      "source_type": "trade_news",
+      "source_url": "https://northern-vacuum.example/cedar-delta-deal",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-10-29T10:15:00Z",
+      "published_at": "2026-10-01",
+      "title": "Cedar Pumps buys Delta Vacuum in all-cash deal",
+      "company": "Cedar Pumps",
+      "product": null,
+      "technology": "vacuum pumps",
+      "key_facts": [
+        "Delta Vacuum has 120 employees in Ohio."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true,
+        "reasons": [],
+        "date_missing": false
+      },
+      "page_fingerprint": "7517f44659ea7517f44659ea7517f44659ea7517f44659ea7517f44659ea0000",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "mentions_us_location": true,
+      "industrial_hint": true,
+      "region": "US",
+      "event_type": "acquisition",
+      "story_id": "84ec3f5c6026",
+      "via_fallback": false,
+      "fallback_for": null,
+      "watch_matches": []
+    },
+    {
+      "id": "639dfc03ae31",
+      "source_id": "demo_trade_news",
+      "source_name": "Demo Compressed Air Weekly",
+      "source_type": "trade_news",
+      "source_url": "https://demo-trade.example/harbor-plant",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-10-29T10:15:00Z",
+      "published_at": "2026-10-15",
+      "title": "Harbor Blowers opens second plant in Ontario",
+      "company": "Harbor Blowers",
+      "product": null,
+      "technology": "blowers",
+      "key_facts": [
+        "The 40,000 sq ft plant is in Hamilton, Ontario."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true,
+        "reasons": [],
+        "date_missing": false
+      },
+      "page_fingerprint": "639dfc03ae31639dfc03ae31639dfc03ae31639dfc03ae31639dfc03ae310000",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "mentions_us_location": false,
+      "industrial_hint": false,
+      "region": "CA",
+      "event_type": "investment_expansion",
+      "story_id": "539c3967c118",
+      "via_fallback": false,
+      "fallback_for": null,
+      "watch_matches": []
+    },
+    {
+      "id": "c6d9ffbf2b91",
+      "source_id": "demo_trade_news",
+      "source_name": "Demo Compressed Air Weekly",
+      "source_type": "trade_news",
+      "source_url": "https://demo-trade.example/granite-webinar",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-10-29T10:15:00Z",
+      "published_at": "2026-10-20",
+      "title": "Granite Gas hosts hydrogen compression webinar",
+      "company": "Granite Gas",
+      "product": null,
+      "technology": "hydrogen compression",
+      "key_facts": [
+        "The webinar is on 12 November."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true,
+        "reasons": [],
+        "date_missing": false
+      },
+      "page_fingerprint": "c6d9ffbf2b91c6d9ffbf2b91c6d9ffbf2b91c6d9ffbf2b91c6d9ffbf2b910000",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "mentions_us_location": true,
+      "industrial_hint": true,
+      "region": "US",
+      "event_type": "event",
+      "story_id": "dfffa8c0440e",
+      "via_fallback": false,
+      "fallback_for": null,
+      "watch_matches": []
+    },
+    {
+      "id": "6aec4baae6fd",
+      "source_id": "demo_trade_news",
+      "source_name": "Demo Compressed Air Weekly",
+      "source_type": "trade_news",
+      "source_url": "https://demo-trade.example/summit-ir-plant",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-10-29T10:15:00Z",
+      "published_at": "2026-10-22",
+      "title": "Summit Compressors opens a new plant in Texas",
+      "company": "Summit Compressors",
+      "product": null,
+      "technology": "rotary screw compressors",
+      "key_facts": [
+        "Summit Compressors said the plant adds 80 jobs."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true,
+        "reasons": [],
+        "date_missing": false
+      },
+      "page_fingerprint": "6aec4baae6fd6aec4baae6fd6aec4baae6fd6aec4baae6fd6aec4baae6fd0000",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "mentions_us_location": true,
+      "industrial_hint": true,
+      "region": "US",
+      "event_type": "investment_expansion",
+      "story_id": "9abab561f524",
+      "via_fallback": true,
+      "fallback_for": "demo_summit_news",
+      "watch_matches": [
+        "Summit Compressors"
+      ]
+    },
+    {
+      "id": "9211aacac97e",
+      "source_id": "demo_trade_news",
+      "source_name": "Demo Compressed Air Weekly",
+      "source_type": "trade_news",
+      "source_url": "https://demo-trade.example/pine-dryer",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-10-29T10:15:00Z",
+      "published_at": "2026-10-02",
+      "title": "Pine Air names new head of dryer business",
+      "company": "Pine Air",
+      "product": null,
+      "technology": "air treatment",
+      "key_facts": [
+        "The new head joins from a rival dryer maker."
+      ],
+      "label": "claim",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true,
+        "reasons": [],
+        "date_missing": false
+      },
+      "page_fingerprint": "9211aacac97e9211aacac97e9211aacac97e9211aacac97e9211aacac97e0000",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "mentions_us_location": true,
+      "industrial_hint": true,
+      "region": "US",
+      "event_type": "appointment",
+      "story_id": "f938fc8b51ca",
+      "via_fallback": false,
+      "fallback_for": null,
+      "watch_matches": []
+    },
+    {
+      "id": "6793b1613e9f",
+      "source_id": "demo_energy_gov",
+      "source_name": "Demo Energy Department",
+      "source_type": "government",
+      "source_url": "https://demo-energy.example/no-date-note",
+      "licence_note": "Public web page; facts and links only",
+      "collected_at": "2026-10-29T10:15:00Z",
+      "published_at": null,
+      "title": "Demo Energy Department posts compressed-air guide",
+      "company": "Demo Energy Department",
+      "product": null,
+      "technology": null,
+      "key_facts": [
+        "The guide lists 12 efficiency measures."
+      ],
+      "label": "fact",
+      "filter": {
+        "compressor_related": true,
+        "north_america": true,
+        "credible_source": true,
+        "recent": true,
+        "passed": true,
+        "reasons": [],
+        "date_missing": false
+      },
+      "page_fingerprint": "6793b1613e9f6793b1613e9f6793b1613e9f6793b1613e9f6793b1613e9f0000",
+      "personal_data_removed": true,
+      "matched_keywords": [
+        "compressor"
+      ],
+      "mentions_us_location": true,
+      "industrial_hint": true,
+      "region": "US",
+      "event_type": null,
+      "story_id": "d2167ffc4866",
+      "via_fallback": false,
+      "fallback_for": null,
+      "watch_matches": []
+    }
+  ],
+  "stories": [
+    {
+      "story_id": "49e51a42311b",
+      "headline": "Borealis Air launches BX-200 oil-free compressor",
+      "company": "Borealis Air",
+      "product": "BX-200",
+      "event_type": "product_launch",
+      "item_ids": [
+        "0fc6f2c9b542",
+        "4db8111e4fb1"
+      ],
+      "source_ids": [
+        "demo_trade_news",
+        "demo_maker_news"
+      ],
+      "first_published": "2026-10-12",
+      "last_published": "2026-10-13",
+      "via_fallback_count": 0
+    },
+    {
+      "story_id": "84ec3f5c6026",
+      "headline": "Cedar Pumps acquires Delta Vacuum",
+      "company": "Cedar Pumps",
+      "product": null,
+      "event_type": "acquisition",
+      "item_ids": [
+        "d983211fcfd4",
+        "7517f44659ea"
+      ],
+      "source_ids": [
+        "demo_trade_news",
+        "disc_0a1b2c3d4e5f"
+      ],
+      "first_published": "2026-09-30",
+      "last_published": "2026-10-01",
+      "via_fallback_count": 0
+    },
+    {
+      "story_id": "9abab561f524",
+      "headline": "Summit Compressors opens a new plant in Texas",
+      "company": "Summit Compressors",
+      "product": null,
+      "event_type": "investment_expansion",
+      "item_ids": [
+        "6aec4baae6fd"
+      ],
+      "source_ids": [
+        "demo_trade_news"
+      ],
+      "first_published": "2026-10-22",
+      "last_published": "2026-10-22",
+      "via_fallback_count": 1
+    },
+    {
+      "story_id": "dfffa8c0440e",
+      "headline": "Granite Gas hosts hydrogen compression webinar",
+      "company": "Granite Gas",
+      "product": null,
+      "event_type": "event",
+      "item_ids": [
+        "c6d9ffbf2b91"
+      ],
+      "source_ids": [
+        "demo_trade_news"
+      ],
+      "first_published": "2026-10-20",
+      "last_published": "2026-10-20",
+      "via_fallback_count": 0
+    },
+    {
+      "story_id": "539c3967c118",
+      "headline": "Harbor Blowers opens second plant in Ontario",
+      "company": "Harbor Blowers",
+      "product": null,
+      "event_type": "investment_expansion",
+      "item_ids": [
+        "639dfc03ae31"
+      ],
+      "source_ids": [
+        "demo_trade_news"
+      ],
+      "first_published": "2026-10-15",
+      "last_published": "2026-10-15",
+      "via_fallback_count": 0
+    },
+    {
+      "story_id": "1ff5064c96ee",
+      "headline": "Department proposes new compressor efficiency standard",
+      "company": "Demo Energy Department",
+      "product": null,
+      "event_type": "regulation_standard",
+      "item_ids": [
+        "d0fa70a152da"
+      ],
+      "source_ids": [
+        "demo_energy_gov"
+      ],
+      "first_published": "2026-10-08",
+      "last_published": "2026-10-08",
+      "via_fallback_count": 0
+    },
+    {
+      "story_id": "f938fc8b51ca",
+      "headline": "Pine Air names new head of dryer business",
+      "company": "Pine Air",
+      "product": null,
+      "event_type": "appointment",
+      "item_ids": [
+        "9211aacac97e"
+      ],
+      "source_ids": [
+        "demo_trade_news"
+      ],
+      "first_published": "2026-10-02",
+      "last_published": "2026-10-02",
+      "via_fallback_count": 0
+    },
+    {
+      "story_id": "d2167ffc4866",
+      "headline": "Demo Energy Department posts compressed-air guide",
+      "company": "Demo Energy Department",
+      "product": null,
+      "event_type": null,
+      "item_ids": [
+        "6793b1613e9f"
+      ],
+      "source_ids": [
+        "demo_energy_gov"
+      ],
+      "first_published": null,
+      "last_published": null,
+      "via_fallback_count": 0
+    }
+  ],
+  "settings_used": {
+    "regions": [
+      "US",
+      "CA"
+    ],
+    "technologies": [],
+    "event_types": [],
+    "recent_months": 12,
+    "extra_compressor_keywords": [],
+    "excluded_keywords": [],
+    "require_industrial": false,
+    "source_types": [
+      "competitor",
+      "trade_news",
+      "government"
+    ],
+    "use_discovered_sources": false,
+    "min_trust_score": 70,
+    "max_items_per_source": 20,
+    "discovery_enabled": false,
+    "fallback_enabled": true,
+    "fallback_max_items_per_source": 40,
+    "watchlist": [
+      {
+        "name": "Summit Compressors",
+        "kind": "company",
+        "aliases": [],
+        "follow_when_blocked": true
+      }
+    ]
+  },
+  "candidates_considered": 4
+}

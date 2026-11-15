@@ -95,11 +95,20 @@ def _completeness(item: Item) -> int:
     return sum(1 for v in item.model_dump().values() if v not in (None, "", [], {}))
 
 
+# Phase 2 fields filled by extract.py (sachi2.md S5). A duplicate that knows more of these wins first.
+PHASE2_FIELDS = ("region", "event_type", "product")
+
+
+def _phase2_filled(item: Item) -> int:
+    return sum(1 for f in PHASE2_FIELDS if getattr(item, f, None) not in (None, ""))
+
+
 def _better(a: tuple[int, Item], b: tuple[int, Item]) -> tuple[int, Item]:
-    """More complete wins; tie -> earlier collected_at; tie -> earlier in the input."""
+    """More Phase 2 fields filled wins; then more complete overall; tie -> earlier collected_at;
+    tie -> earlier in the input."""
     (ia, xa), (ib, xb) = a, b
-    ka = (-_completeness(xa), xa.collected_at, ia)
-    kb = (-_completeness(xb), xb.collected_at, ib)
+    ka = (-_phase2_filled(xa), -_completeness(xa), xa.collected_at, ia)
+    kb = (-_phase2_filled(xb), -_completeness(xb), xb.collected_at, ib)
     return a if ka <= kb else b
 
 

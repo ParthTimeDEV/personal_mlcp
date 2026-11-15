@@ -1,0 +1,74 @@
+# Product families by company (sachi2.md S4). Used by extract.detect_product.
+# Keys are canonical company names from config/aliases.yaml.
+#
+#   name:        the product or series name exactly as the company writes it. Matched as a whole phrase;
+#                names of 4 letters or fewer, or written all in capitals, are matched case-sensitively.
+#   verified:    true only if the name was seen on the company's OWN website on `checked_on`.
+#                false = seen only on third-party sites (distributors, trade press); still usable for
+#                matching because a match needs the exact name in the article, but re-check it.
+#   checked_at:  the page where it was seen.
+#
+# Detection never guesses: a name is returned only if it is written in the title or text, and only for
+# the item's own company (or, when the company is unknown, only if all names found belong to one company).
+
+Atlas Copco:
+  - name: GA VSD+
+    verified: true
+    checked_on: 2026-11-14
+    checked_at: https://www.atlascopco.com/en-ca/compressors/products/air-compressor/rotary-screw-compressor/oil-lubricated-screw-compressor-ga-180-315-vsd-plus
+  - name: ZR/ZT
+    verified: true
+    checked_on: 2026-11-14
+    checked_at: https://www.atlascopco.com/en-id/compressors/products/air-compressor/oil-free-air-compressors/rotary-screw-air-compressors-zr-zt
+  - name: GA FLX
+    verified: true
+    checked_on: 2026-11-14
+    checked_at: https://www.atlascopco.com/nl-be/compressors/products/air-compressor/oil-free-air-compressors/rotary-screw-air-compressors-zr-zt
+
+Ingersoll Rand:
+  - name: Next Generation R-Series
+    verified: true
+    checked_on: 2026-11-14
+    checked_at: https://www.ingersollrand.com/en/air-compressor/oil-flooded-ac/ng-r-series-160-290kw
+
+Quincy Compressor:
+  - name: QSI
+    verified: true
+    checked_on: 2026-11-14
+    checked_at: https://www.quincycompressor.com/products/rotary-screw-air-compressors/
+  - name: QGD
+    verified: true
+    checked_on: 2026-11-14
+    checked_at: https://www.quincycompressor.com/products/rotary-screw-air-compressors/
+  - name: QGDV
+    verified: true
+    checked_on: 2026-11-14
+    checked_at: https://www.quincycompressor.com/products/rotary-screw-air-compressors/
+  - name: QGV
+    verified: true
+    checked_on: 2026-11-14
+    checked_at: https://www.quincycompressor.com/products/rotary-screw-air-compressors/
+  - name: QGS
+    verified: true
+    checked_on: 2026-11-14
+    checked_at: https://www.quincycompressor.com/?p=15668
+
+Sullair:
+  - name: LS Series
+    verified: true
+    checked_on: 2026-11-14
+    checked_at: https://america.sullair.com/en/products/sullair-ls-series
+  - name: ShopTek
+    verified: false
+    checked_on: 2026-11-14
+    checked_at: https://www-hitachi-ae.itdweb.ext.hitachi.co.jp/eng/products/connective-industries/industrial-machinery/
+  - name: DSP Series
+    verified: false
+    checked_on: 2026-11-14
+    checked_at: https://www-hitachi-ae.itdweb.ext.hitachi.co.jp/eng/products/connective-industries/industrial-machinery/
+
+Kaeser Compressors:
+  - name: Sigma Frequency Control
+    verified: false
+    checked_on: 2026-11-14
+    checked_at: https://stilesmachinery.com/series/kaeser-sfc/
