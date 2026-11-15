@@ -551,3 +551,39 @@ def test_short_page_phase2_fields_from_title():
     assert item.region == "CA"
     assert item.event_type == "product_launch"
     assert item.product is None
+
+
+# ---- brand and product names are not people (found in the Phase 2 demo run) ----
+
+def test_scrub_keeps_brand_and_product_names():
+    from atlas.extract import scrub
+    for text in ("FS-Elliott Introduces Polaris P300 AC, Regulus Centrifugal Performance",
+                 "To meet this need, Fluke introduced the Fluke ii1050 and ii1030 Acoustic Imagers"):
+        assert scrub(text) == text
+
+
+def test_scrub_still_removes_full_names_emails_and_phones():
+    from atlas.extract import scrub
+    out = scrub("Kaeser appoints Thomas Mueller as CEO. Call Maria Gonzalez on 555-123-4567 or maria.g@acme.com")
+    assert "Thomas Mueller" not in out and "Maria Gonzalez" not in out
+    assert "555-123-4567" not in out and "maria.g@acme.com" not in out
+    assert "<PERSON>" in out and "<PHONE>" in out and "<EMAIL>" in out
+
+
+def test_looks_like_full_name_rules():
+    from atlas.extract import _looks_like_full_name as full
+    assert full("Robert Chen") and full("Mary-Ann O'Neil")
+    assert not full("Fluke") and not full("Polaris P300") and not full("ii1050")
+
+
+def test_a_span_with_a_machine_word_is_a_product_not_a_person():
+    from atlas.extract import scrub, _looks_like_full_name as full
+    assert not full("Regulus Centrifugal")
+    assert scrub("FS-Elliott launched the Regulus Centrifugal control panel") == \
+        "FS-Elliott launched the Regulus Centrifugal control panel"
+
+
+def test_hyphenated_machine_words_are_not_a_person():
+    from atlas.extract import _looks_like_full_name as full
+    assert not full("Delivering Oil-Free")
+    assert full("Mary-Ann Smith")

@@ -190,6 +190,27 @@ def _engines():
     return analyzer, anonymizer, nlp
 
 
+@lru_cache(maxsize=1)
+def _product_words() -> frozenset[str]:
+    """Words from our own compressor keywords and technology patterns ("centrifugal", "vacuum", "blower").
+    A span containing one is a product or machine name, never a person."""
+    phrases = _load_keywords()["compressor"] + [p for _, patterns in _load_technologies() for p in patterns]
+    return frozenset(w.lower() for phrase in phrases for w in re.findall(r"[A-Za-z]{4,}", phrase))
+
+
+def _looks_like_full_name(span: str) -> bool:
+    """True for a PERSON detection that reads like a person's full name: two or more words, letters only.
+    The small spaCy model tags brand and product names ("Fluke", "Polaris P300", "Regulus R2000") as
+    PERSON; a single word or a word with digits is far more often a product or company than a person.
+    A lone surname of a person found elsewhere in the text is still caught by person_name_tokens."""
+    words = re.findall(r"[^\s]+", span.strip())
+    letters = [w for w in words if re.fullmatch(r"[A-Za-z][A-Za-z'’.-]*", w)]
+    if len(words) < 2 or len(letters) != len(words):
+        return False
+    parts = [part for w in words for part in re.split(r"[-'’.]", w.lower()) if part]
+    return not any(part in _product_words() for part in parts)  # "Regulus Centrifugal", "Delivering Oil-Free"
+
+
 def scrub(text: Optional[str]) -> Optional[str]:
     """Replace personal data in `text` with placeholders such as <PERSON>, <EMAIL>, <PHONE>."""
     if not text:
@@ -198,6 +219,7 @@ def scrub(text: Optional[str]) -> Optional[str]:
 
     analyzer, anonymizer, _ = _engines()
     results = analyzer.analyze(text=text, language="en", entities=PII_ENTITIES, allow_list=_allow_list())
+    results = [r for r in results if r.entity_type != "PERSON" or _looks_like_full_name(text[r.start:r.end])]
     if not results:
         return text
     operators = {e: OperatorConfig("replace", {"new_value": v}) for e, v in PII_REPLACEMENTS.items()}
@@ -216,7 +238,7 @@ def person_name_tokens(*texts: Optional[str]) -> set[str]:
         return tokens
     for hit in analyzer.analyze(text=joined, language="en", entities=["PERSON"], allow_list=_allow_list()):
         parts = re.findall(r"[A-Za-z][A-Za-z'’-]+", joined[hit.start:hit.end])
-        if len(parts) < 2:
+        if len(parts) < 2 or not _looks_like_full_name(joined[hit.start:hit.end]):
             continue
         for part in parts:
             if len(part) >= 3 and not re.search(rf"(?<!\w){re.escape(part.lower())}(?!\w)", joined):

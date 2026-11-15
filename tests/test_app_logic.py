@@ -1328,3 +1328,35 @@ def test_generate_report_bytes_failures():
 
 
 
+
+
+# ---- one-page summary on the Report screen ----
+
+def test_onepager_paths_and_filenames():
+    run_id = "20261029T101500Z"
+    assert get_report_relative_path(run_id, "pdf", "onepager") == "reports/onepager_20261029T101500Z.pdf"
+    assert get_report_filename(run_id, "pptx", "onepager") == "onepager_20261029T101500Z.pptx"
+    assert get_report_relative_path(run_id, "pdf") == "reports/report_20261029T101500Z.pdf"  # default unchanged
+
+
+def test_find_existing_reports_lists_onepager_and_full_report_separately():
+    run_id = "20261029T101500Z"
+    entries = [f"report_{run_id}.pdf", f"report_{run_id}.pptx", f"onepager_{run_id}.pdf", f"onepager_{run_id}.pptx"]
+    matches = find_existing_reports(run_id, entries)
+    assert [(m["kind"], m["fmt"]) for m in matches] == [
+        ("onepager", "pptx"), ("onepager", "pdf"), ("report", "pptx"), ("report", "pdf")]
+    assert matches[0]["relative_path"] == f"reports/onepager_{run_id}.pptx"
+    assert "One-page" in matches[0]["label"]
+
+
+def test_generate_onepager_bytes_uses_write_onepager():
+    run_id = "20261029T101500Z"
+    with patch("atlas.report.onepager.write_onepager") as mock_write, \
+         patch("atlas.report.build.write_report") as mock_full, \
+         patch("atlas.storage.read_bytes") as mock_read:
+        mock_write.return_value = f"/Volumes/test/reports/onepager_{run_id}.pdf"
+        mock_read.return_value = b"ONEPAGER"
+        data, err = generate_report_bytes(run_id, "pdf", "onepager")
+        assert err is None and data == b"ONEPAGER"
+        assert mock_write.call_args[0] == (run_id, "pdf") and not mock_full.called
+        assert mock_read.call_args[0][0] == f"reports/onepager_{run_id}.pdf"
