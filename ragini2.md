@@ -68,8 +68,8 @@ def trust_score(candidate) -> tuple[int, list[str]]
 Discovery: seed read; outbound links filtered (social, search engines, already-known domains skipped); feed autodiscovery from a mock homepage; robots-disallowed homepage becomes `rejected_by_rules` and nothing else is fetched; `max_new` honoured; no URL of a search engine anywhere (grep-style assertion on every request made); one failing candidate does not stop the rest.
 Vetting: terms with a scraping ban found deep in a long page → `forbids_automation` with a quote ≤ 200 characters; terms clean → `ok`; no terms page → `unknown` and `usable=False`; request budget (≤ 8) respected; 429 stops that candidate; trust score table for 5 hand-made candidates, each reason line present; score never above 100; default settings change nothing in Phase 1 modules.
 
-## Task R4: Wider-scope sources (by hand, same procedure as Phase 1)
-Vet **5 to 7 new sources** for the wider scope: at least 2 Canadian (English-language), at least 2 covering the new technologies (air treatment, blowers, vacuum, gas or hydrogen compression), and at least 1 more US competitor. Use the Phase 1 procedure and write them into `docs/source_vetting.md` (same format, with quotes) and `config/sources.yaml` (`region: CA` where applicable; all `proposed`). Use the automatic vetter on the same sites as a check: write in the vetting doc where its verdict and yours differ. Blocked or unreachable ones stay in the register with their status and reason. Target: the register has 10 to 12 `working` proposed sources in total.
+## Task R4 (optional, small): hand-check the scout, promote the best finds
+The scout finds and vets sources by itself; nobody has to add sources for a run to work. This task only checks that the automatic vetter can be trusted and makes the best finds permanent. Hand-check **3 of the scout's `usable` candidates** (plus, if you find one, a Canadian English-language source), using the Phase 1 procedure. For the scope, prefer: at least 2 Canadian (English-language), at least 2 covering the new technologies (air treatment, blowers, vacuum, gas or hydrogen compression), and at least 1 more US competitor. Use the Phase 1 procedure and write them into `docs/source_vetting.md` (same format, with quotes) and `config/sources.yaml` (`region: CA` where applicable; all `proposed`). Use the automatic vetter on the same sites as a check: write in the vetting doc where its verdict and yours differ. Blocked or unreachable ones stay in the register with their status and reason. No fixed target: the run already uses every `usable` candidate when `use_discovered_sources` is on. A source promoted here only becomes part of the permanent, human-reviewed register.
 
 ## Task R5: Live check
 Under `dev/ragini`, run discovery on the seed list with the real gate and print only metadata:
@@ -88,7 +88,7 @@ Report the table to the team. Then hand-check 3 `usable` candidates against the 
 - [ ] `pytest tests/test_scout_discover.py tests/test_scout_vet.py -q` passes offline.
 - [ ] A real discovery run produces candidates with evidence, trust scores and reasons; unusable ones say why.
 - [ ] No search-engine results page is ever fetched; no request bypasses the gate.
-- [ ] 5 to 7 new sources vetted by hand and recorded with quotes; the register has 10 to 12 working proposed sources.
+- [ ] 3 scout candidates hand-checked and recorded with quotes; any that pass are added to the register as `proposed`.
 - [ ] Nothing is marked `approved`.
 
 ## Do not

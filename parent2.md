@@ -126,7 +126,7 @@ The scope was "industrial compressors, USA". Phase 2 widens it "a bit". Defaults
 | Region | US | **US + Canada**, English-language sources. Mexico only for English-language sources; Spanish is a stretch goal, not required |
 | Technology | compressors | add **air treatment (dryers, filters), blowers, vacuum pumps, gas compressors (including hydrogen)** |
 | News type | any | tag every item with an `event_type` (product launch, acquisition, expansion, partnership, regulation, appointment, award, event) |
-| Sources | 5 proposed | **10 to 12 proposed**, mixing the new regions and technologies |
+| Sources | 5 proposed | the 5 registered sources **plus every source the scout finds and vets as `usable`** (used when `use_discovered_sources` is on); the register itself only grows when a human promotes a find |
 | Products | `product` always null | extract a `product` (model or series name) when stated; never guess |
 
 Work split: **Ragini** vets and adds the new sources. **Sachi** teaches the engine the new scope: region tagging, event types, product names, new technology labels and keywords. **Nikhil** makes the filter obey `ScoutSettings` (regions, technologies, event types, extra and excluded keywords, `require_industrial`).
@@ -321,7 +321,7 @@ The demo or hand-in date for Phase 2 is **not yet set**; Section 17 asks for it.
 | PDF and PPTX libraries | python-pptx and reportlab, charts by matplotlib in memory |
 | Discovery without a paid key | seed list, outbound links, feed autodiscovery. Search API optional |
 | Terms `unknown` for a discovered source | not usable automatically |
-| Scope | US + Canada, new technologies, event types, 10 to 12 sources (section 6) |
+| Scope | US + Canada, new technologies, event types, registered sources plus scout-found ones (section 6) |
 | Switching | by watchlist (company or product), only through other allowed sources |
 
 ### Open (need an answer)

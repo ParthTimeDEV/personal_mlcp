@@ -23,6 +23,7 @@ from atlas.models import (
 )
 from atlas.storage_check import _local_files
 
+DISCOVERY_MAX_NEW = 60  # new candidates per run: all seeds first, then links found on our own sources
 SWITCH_NO_PAGES = "no pages collected"
 SWITCH_RATE_LIMITED = "rate limited (429/503)"
 
@@ -143,7 +144,7 @@ def _run_discovery(st: SimpleNamespace, sources: list[Source], gate, settings: S
         discover, vet = st.load_discovery()
         known = {c.domain for c in existing} | {s.url.split("/")[2].removeprefix("www.") for s in sources}
         _say("\nDiscovery: looking for new candidate sources (public pages and robots.txt rules apply)...")
-        found = discover(sources, gate, settings, known_domains=known)
+        found = discover(sources, gate, settings, known_domains=known, max_new=DISCOVERY_MAX_NEW)
         vetted: list[Candidate] = []
         for cand in found:
             try:

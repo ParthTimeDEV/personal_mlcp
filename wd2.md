@@ -10,7 +10,7 @@ Read `parent2.md` first (the full brief), then your own file. Phase 1 is done an
 | Person | Task area | Owns | Main deliverable |
 |---|---|---|---|
 | **Nikhil** | Scout engine: switching and stories. Filter obeys settings. Integration | `atlas/scout/fallback.py`, `stories.py`, `settings_store.py`, `atlas/filter.py`, `atlas/run.py`, `models.py`, `storage.py`, their tests | When a source is refused, the run finds coverage from other allowed sources and labels it; items are grouped into stories; every setting changes the result; one command runs it all |
-| **Ragini** | Scout engine: discovery and automatic vetting. New sources for the wider scope | `atlas/scout/discover.py`, `vet.py`, `config/discovery_seeds.yaml`, `config/sources.yaml`, `docs/source_vetting.md`, their tests | The scout finds candidate sources, vets them legally, scores their trust; 5 to 7 new vetted sources (Canada and new technologies) |
+| **Ragini** | Scout engine: discovery and automatic vetting. Hand-check of the scout's finds (optional) | `atlas/scout/discover.py`, `vet.py`, `config/discovery_seeds.yaml`, `config/sources.yaml`, `docs/source_vetting.md`, their tests | The scout finds candidate sources, vets them legally, scores their trust; 5 to 7 new vetted sources (Canada and new technologies) |
 | **Sachi** | Wider scope in extraction. PDF/PPTX report | `atlas/extract.py`, `clean.py`, `atlas/report/*`, configs for technologies, keywords, aliases, products, their tests | Region, event type and product on every item; new technology labels; a PDF and a PPTX report built from a run |
 | **Parth** | Frontend | `app/*`, `tests/test_app_logic.py`, frontend docs | A Streamlit app: dashboard and item browser, settings editor, candidate review, run launcher, report download |
 
@@ -28,7 +28,7 @@ Each person builds against the models already in `atlas/models.py` and against s
 | Person | Main module(s) | Rough size |
 |---|---|---|
 | Nikhil | fallback, stories, settings store, filter changes, run integration | 5 modules, heavy on integration and tests |
-| Ragini | discovery, automatic vetting, trust score, 5 to 7 new sources vetted by hand | 3 modules plus real-world vetting |
+| Ragini | discovery, automatic vetting, trust score, hand-check of 3 scout finds | 3 modules plus real-world vetting |
 | Sachi | event, product and region extraction, new configs, 2 report builders, charts | 5 modules plus design work |
 | Parth | 5 frontend screens, helper library, run launcher | 1 app, 5 screens, UI logic tests |
 
