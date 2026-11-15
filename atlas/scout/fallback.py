@@ -119,8 +119,9 @@ class _GuardedGate:
 # ---------- matching and labelling ----------
 
 def find_matches(item: Item, entries: list[WatchEntry]) -> list[str]:
-    """Names of watch entries mentioned in the item's title or key facts (whole word, any case)."""
-    text = " ".join([item.title or "", *item.key_facts])
+    """Names of watch entries mentioned in the item's title, key facts or company (whole word, any case).
+    The company field is the extractor's own finding from the page text, which is gone by now."""
+    text = " ".join([item.title or "", item.company or "", *item.key_facts])
     return [e.name for e in entries if any(_found(t, text) for t in _terms(e))]
 
 

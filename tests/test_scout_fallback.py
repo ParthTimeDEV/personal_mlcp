@@ -73,6 +73,13 @@ def test_items_mentioning_an_entry_are_labelled_by_copy():
     assert original[0].via_fallback is False  # not mutated
 
 
+def test_company_field_counts_even_when_title_and_facts_do_not_name_it():
+    # live case: an EXPO article whose extracted company is Kaeser, but whose title never says so
+    expo = item(1, title="Best Practices 2026 EXPO delivers record attendance", company="Kaeser Compressors")
+    assert fb.find_matches(expo, ENTRIES) == ["Kaeser Compressors"]
+    assert fb.find_matches(item(2, title="Unrelated dryer news", company="Acme"), ENTRIES) == []
+
+
 def test_whole_word_match_only():
     assert fb.find_matches(item(1, title="Ingersoll Randolph visits"), ENTRIES[:1]) == []
 
