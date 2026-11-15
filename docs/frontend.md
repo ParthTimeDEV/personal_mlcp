@@ -146,6 +146,7 @@ Organized into five logical configuration groups:
 
 - **Run Selection:** Choose any completed run from cloud storage (defaults to newest).
 - **Content Preview Card:** Displays verified counts derived from the run's `OutputEnvelope` (sources checked, verified items, story clusters, publication window, top companies).
+- **What do you need?** *One-page summary* (default, recommended) or *Full report*. The one-page summary has four boxes: look at first, other facts, how the news differs from Atlas Copco's own, and the sources. It calls `atlas.report.onepager.write_onepager` and uploads to `reports/onepager_<run_id>.<fmt>`. The full report is the 10-slide version below.
 - **Format Options:**
   - `pptx`: Executive 16:9 widescreen PowerPoint presentation slide deck.
   - `pdf`: Executive digest document.
