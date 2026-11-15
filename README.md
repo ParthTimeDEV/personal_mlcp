@@ -38,3 +38,9 @@ A run writes `source_register/`, `raw/`, `clean/`, `facts/`, `output/poc_<run_id
 to the Volume `/Volumes/atlas_poc/default/data/<prefix>`, prints a per-source summary, and ends with a
 local-data check. Exit code 0 means the output validated and nothing went wrong; blocked sources are reported
 as findings and do not cause a non-zero exit.
+
+## Phase 2 demo run
+
+Final run `20261115T192521Z` (empty prefix, so the real demo folders): 10 sources read (5 registered, 5 found and
+vetted by the scout engine), 63 items passed the filter, 6 sources refused and shown, Ingersoll Rand switching
+tried (no coverage found in the pages read), 0 errors. Reports: `reports/report_20261115T192521Z.pptx` and `.pdf`.
