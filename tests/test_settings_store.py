@@ -34,9 +34,9 @@ def register_source(url="https://old.example/news") -> Source:
 ON = ScoutSettings(use_discovered_sources=True)
 
 
-def test_default_settings_reproduce_phase_1():
+def test_default_settings_are_the_phase_2_defaults():
     s = ss.default_settings()
-    assert s.regions == ["US"] and s.recent_months == 12 and s.require_industrial is False
+    assert s.regions == ["US", "CA"] and s.recent_months == 12 and s.require_industrial is False
     assert s.use_discovered_sources is False and s.discovery_enabled is False
     assert {w.name for w in s.watchlist} >= {"Ingersoll Rand", "Sullair"}
 

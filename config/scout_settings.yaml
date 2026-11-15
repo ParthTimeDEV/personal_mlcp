@@ -1,8 +1,8 @@
 # Default ScoutSettings (atlas/models.py). The frontend saves changes to settings/scout_settings.json in the
 # Volume; these values are used when nothing has been saved. Every key is optional; an omitted key takes
-# the default from the model. The defaults below reproduce the phase 1 behaviour.
+# the default from the model. Everything below equals Phase 1 except regions (US + Canada, parent2.md section 6).
 
-regions: [US]
+regions: [US, CA]               # Phase 2 default (parent2.md section 6); the model default stays [US] = Phase 1
 technologies: []              # empty = all labels in config/technologies.yaml
 event_types: []               # empty = all
 recent_months: 12

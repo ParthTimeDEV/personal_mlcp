@@ -500,7 +500,7 @@ def test_load_settings_saved_vs_defaults():
         mock_read.return_value = None
         s = settings_store.load_settings()
         assert s.recent_months == 12
-        assert s.regions == ["US"]
+        assert s.regions == settings_store.default_settings().regions
 
     # 2. When storage returns saved settings
     with patch("atlas.storage.read_json_or_none") as mock_read:
