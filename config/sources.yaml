@@ -192,3 +192,54 @@
   licence_note: "Site answers HTTP 403 to our agent"
   crawl_delay: null
   notes: "robots.txt and the homepage returned HTTP 403 (treated as disallow-all). Not bypassed. Terms were not read."
+
+- source_id: fs_elliott_news
+  name: FS-Elliott (news)
+  url: https://www.fs-elliott.com/
+  type: competitor
+  access_method: rss
+  feed_url: https://www.fs-elliott.com/feed/
+  item_url_pattern: null
+  robots_status: allowed
+  terms_status: ok
+  vetting_status: working
+  status: proposed
+  review_date: 2026-11-16
+  region: US
+  licence_note: "Public web page; facts and links only"
+  crawl_delay: null
+  notes: "US maker of oil-free centrifugal compressors (Pennsylvania). Found by the scout engine, then hand-checked: Terms of Use page read in full (about 19,700 characters), no clause on robots, scraping or automated access. RSS feed with dated posts (newest 5 Nov 2026). Company posts are mostly claims."
+
+- source_id: burckhardt_compression_news
+  name: Burckhardt Compression (news)
+  url: https://www.burckhardtcompression.com/
+  type: competitor
+  access_method: rss
+  feed_url: https://www.burckhardtcompression.com/about/news-stories-and-whitepapers/article-search/rss
+  item_url_pattern: null
+  robots_status: allowed
+  terms_status: ok
+  vetting_status: working
+  status: proposed
+  review_date: 2026-11-16
+  region: CH
+  licence_note: "Public web page; facts and links only"
+  crawl_delay: null
+  notes: "Swiss maker of reciprocating gas and hydrogen compressors; global news feed. Found by the scout engine, then hand-checked: the website Terms of use page (legal-compliance-quality/terms-of-use) read in full, no clause on automated access. The scout had first read the sales terms; the vetter was fixed to prefer website terms. Region is CH on purpose: an item passes the North America check only if its text names a US, Canadian or Mexican place."
+
+- source_id: sundyne_news
+  name: Sundyne (news)
+  url: https://www.sundyne.com/
+  type: competitor
+  access_method: rss
+  feed_url: https://www.sundyne.com/feed/
+  item_url_pattern: null
+  robots_status: allowed
+  terms_status: forbids_automation
+  vetting_status: blocked
+  status: blocked
+  review_date: 2026-11-16
+  region: US
+  licence_note: "Public web page; facts and links only"
+  crawl_delay: null
+  notes: "Refused. The site is under Honeywell's Website Terms of Use (honeywell.com/us/en/terms-and-conditions), which say: 'use any robot, spider, or other automatic device, process, or means to access the Site for any purpose, including monitoring or copying any of the material on the Site' and prohibit machine-learning use. The scout first marked it ok because it read Sundyne's purchase conditions; the vetter was fixed. Never fetched since."

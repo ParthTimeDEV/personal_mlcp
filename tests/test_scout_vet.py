@@ -333,3 +333,72 @@ def test_trust_score_is_pure_and_never_above_100():
     snapshot = cand.model_dump()
     assert trust_score(cand, TODAY) == trust_score(cand, TODAY)
     assert cand.model_dump() == snapshot and trust_score(cand, TODAY)[0] == 100
+
+
+# ---------- website terms, not purchase terms (found in the Phase 2 demo run: Sundyne / Honeywell) ----------
+
+PURCHASE_ONLY_HOME = """<html><head><link rel="alternate" type="application/rss+xml" href="/feed.xml"></head><body>
+<footer><a href="/purchase-terms">Supplier Terms and Conditions</a> <a href="/sales-terms">Terms and Conditions of Sales/Service</a>
+<a href="/news">News</a></footer></body></html>"""
+
+
+def test_purchase_and_sales_terms_alone_are_not_terms_ok():
+    routes = clean_site(**{"acme.example/": page(PURCHASE_ONLY_HOME), "acme.example/purchase-terms": page(CLEAN_TERMS),
+                           "acme.example/sales-terms": page(CLEAN_TERMS)})
+    c = vet_candidate(candidate(), make_gate(routes)[0], SETTINGS)
+    assert c.terms_status == "unknown" and not c.usable
+    assert "purchase or sales conditions" in c.notes
+
+
+PARENT_HOME = """<html><head><link rel="alternate" type="application/rss+xml" href="/feed.xml"></head><body>
+<footer><a href="/purchase-terms">Supplier Terms and Conditions</a>
+<a href="https://parent.example/terms-and-conditions">Terms &amp; Conditions</a><a href="/news">News</a></footer></body></html>"""
+
+PARENT_BAN = ("<html><body><p>You may not use any robot, spider, or other automatic device, process, or means "
+              "to access the Site for any purpose, including monitoring or copying any of the material.</p></body></html>")
+
+
+def test_a_parent_companys_website_terms_are_followed_and_can_forbid():
+    routes = clean_site(**{"acme.example/": page(PARENT_HOME), "acme.example/purchase-terms": page(CLEAN_TERMS),
+                           "parent.example/terms-and-conditions": page(PARENT_BAN)})
+    c = vet_candidate(candidate(), make_gate(routes)[0], SETTINGS)
+    assert c.terms_status == "forbids_automation" and c.status == "rejected_by_rules" and not c.usable
+    assert c.terms_url == "https://parent.example/terms-and-conditions" and "robot" in c.terms_evidence
+
+
+def test_website_terms_of_use_are_read_before_sales_terms():
+    from lxml import html as lxml_html
+    from atlas.scout.vet import find_terms_links
+    doc = lxml_html.fromstring(
+        '<body><a href="/general-terms">General terms and conditions</a><a href="/sales">Terms of Sale</a>'
+        '<a href="/terms-of-use">Terms of use</a></body>')
+    links = find_terms_links(doc, "https://acme.example/", "acme.example")
+    assert links[0] == "https://acme.example/terms-of-use" and links[-1] == "https://acme.example/sales"
+
+
+def test_a_third_party_platforms_terms_are_not_the_sites_terms():
+    from lxml import html as lxml_html
+    from atlas.scout.vet import find_terms_links
+    doc = lxml_html.fromstring(
+        '<body><a href="https://policies.google.com/terms">Terms</a><a href="https://www.facebook.com/terms">Terms</a>'
+        '<a href="https://parent.example/terms">Terms &amp; Conditions</a><a href="/terms-of-use">Terms of use</a></body>')
+    links = find_terms_links(doc, "https://acme.example/", "acme.example")
+    assert links == ["https://acme.example/terms-of-use", "https://parent.example/terms"]
+
+
+def test_a_parent_terms_page_that_redirects_within_its_own_host_is_read():
+    routes = clean_site(**{
+        "acme.example/": page(PARENT_HOME), "acme.example/purchase-terms": page(CLEAN_TERMS),
+        "parent.example/terms-and-conditions": (301, {"location": "https://parent.example/us/en/terms"}, ""),
+        "parent.example/us/en/terms": page(PARENT_BAN)})
+    c = vet_candidate(candidate(), make_gate(routes)[0], SETTINGS)
+    assert c.terms_status == "forbids_automation" and c.terms_url == "https://parent.example/terms-and-conditions"
+
+
+def test_a_redirect_to_another_site_is_still_refused():
+    routes = clean_site(**{
+        "acme.example/": page(PARENT_HOME), "acme.example/purchase-terms": page(CLEAN_TERMS),
+        "parent.example/terms-and-conditions": (301, {"location": "https://elsewhere.example/terms"}, ""),
+        "elsewhere.example/terms": page(PARENT_BAN)})
+    c = vet_candidate(candidate(), make_gate(routes)[0], SETTINGS)
+    assert c.terms_status == "unknown"

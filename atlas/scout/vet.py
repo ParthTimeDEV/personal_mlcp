@@ -44,6 +44,12 @@ _AUTOMATION_RE = re.compile(
     r"\b(scrap(?:e|es|ed|ing|er|ers)|crawl(?:s|ed|er|ers|ing)?|spiders?|robots?|bots?|data[- ]mining|"
     r"harvest(?:s|ed|ing)?|automated means|machine[- ]learning)\b", re.I)
 _TERMS_STRONG_RE = re.compile(r"\bterms\b|conditions[- ]of[- ]use|website[- ]terms", re.I)
+# A page that governs USING THE WEBSITE. Purchase, sales and supplier conditions govern buying and selling
+# goods, say nothing about reading the site, and never count as "terms ok" (Sundyne's purchase conditions
+# were accepted while its real website terms, Honeywell's, forbid robots).
+_WEBSITE_TERMS_RE = re.compile(
+    r"terms[- ]of[- ](?:use|service)|website[- ]terms|site[- ]terms|conditions[- ]of[- ]use|legal[- ]notice", re.I)
+_NOT_WEBSITE_TERMS_RE = re.compile(r"purchase|\bsales?\b|supplier|procurement|warrant(?:y|ies)|\borders?\b", re.I)
 _TERMS_WEAK_RE = re.compile(r"\blegal\b|disclaimer|imprint", re.I)
 _LISTING_RANKS = [
     (1, re.compile(r"\b(newsroom|news|press[- ]releases?)\b", re.I)),
@@ -144,8 +150,24 @@ def find_automation_quote(text: str) -> Optional[str]:
     return None
 
 
-def find_terms_links(doc, base_url: str, domain: str) -> list[str]:
-    """Terms-like links on the candidate's own domain, best first (terms before legal notices)."""
+# Third-party platforms and widgets a site embeds. Their terms (a Google map, a social button, a cookie
+# banner) are not the site's own terms and must not be read as if they were.
+_THIRD_PARTY = {
+    "google", "gstatic", "youtube", "facebook", "instagram", "linkedin", "twitter", "x", "tiktok", "pinterest",
+    "microsoft", "apple", "adobe", "vimeo", "cookiebot", "onetrust", "usercentrics", "hubspot", "wordpress",
+    "wix", "shopify", "cloudflare", "recaptcha", "mailchimp", "salesforce", "zoom",
+}
+
+
+def _is_third_party(url: str) -> bool:
+    return registered_domain(url).split(".")[0] in _THIRD_PARTY
+
+
+def _terms_candidates(doc, base_url: str, domain: str) -> list[tuple[int, int, str]]:
+    """(tier, order, url), best first. Tiers: 0 website terms of use / legal notice; 1 other "terms" pages;
+    2 weak legal pages (legal, disclaimer, imprint); 3 purchase / sales / supplier conditions (read last, never
+    counted as website terms). A "Terms" link to another site (a parent company's footer link) is followed
+    too, because that is often where the website terms really are."""
     ranked: list[tuple[int, int, str]] = []
     seen: set[str] = set()
     for order, anchor in enumerate(doc.iter("a")):
@@ -155,18 +177,30 @@ def find_terms_links(doc, base_url: str, domain: str) -> list[str]:
         absolute = urldefrag(urljoin(base_url, href))[0]
         if urlsplit(absolute).scheme not in ("http", "https") or absolute in seen:
             continue
-        if registered_domain(absolute) != domain:
+        text = " ".join(anchor.text_content().split()).lower()
+        hay = text + " " + href.lower()
+        own_site = registered_domain(absolute) == domain
+        if not own_site and (_is_third_party(absolute) or not (
+                _TERMS_STRONG_RE.search(text) and not _NOT_WEBSITE_TERMS_RE.search(hay))):
             continue
-        hay = " ".join(anchor.text_content().split()).lower() + " " + href.lower()
-        if _TERMS_STRONG_RE.search(hay):
-            rank = 1
+        if _NOT_WEBSITE_TERMS_RE.search(hay) and (_TERMS_STRONG_RE.search(hay) or _TERMS_WEAK_RE.search(hay)):
+            tier = 3
+        elif _WEBSITE_TERMS_RE.search(hay):
+            tier = 0
+        elif _TERMS_STRONG_RE.search(hay):
+            tier = 1
         elif _TERMS_WEAK_RE.search(hay):
-            rank = 2
+            tier = 2
         else:
             continue
         seen.add(absolute)
-        ranked.append((rank, order, absolute))
-    return [url for _, _, url in sorted(ranked)]
+        ranked.append((tier, order, absolute))
+    return sorted(ranked)
+
+
+def find_terms_links(doc, base_url: str, domain: str) -> list[str]:
+    """Terms-like links, best first (website terms of use before other terms, legal notices, purchase terms)."""
+    return [url for _, _, url in _terms_candidates(doc, base_url, domain)]
 
 
 # ---------- listing, dates, relevance ----------
@@ -270,9 +304,11 @@ def _plausible(d: date, today: date) -> bool:
 
 
 def _read_terms(c: Candidate, doc, home: Page, f: GatedFetcher, st: _State) -> None:
-    links = find_terms_links(doc, home.url, c.domain)[:MAX_TERMS_PAGES]
-    read_any = False
-    for url in links:
+    candidates = _terms_candidates(doc, home.url, c.domain)[:MAX_TERMS_PAGES]
+    links = [url for _, _, url in candidates]
+    read_website_terms = False
+    read_other = False
+    for tier, _, url in candidates:
         page = f.get(url)
         if page is None or page.status != 200:
             st.notes.append(f"terms page {url} not read ({f.refusal if page is None else 'HTTP ' + str(page.status)})")
@@ -281,20 +317,26 @@ def _read_terms(c: Candidate, doc, home: Page, f: GatedFetcher, st: _State) -> N
         if not text.strip():
             st.notes.append(f"terms page {url} had no readable text")
             continue
-        if not read_any:
+        if tier < 3 and not read_website_terms:
             c.terms_url = url
-        read_any = True
+        if tier < 3:
+            read_website_terms = True
+        else:
+            read_other = True
         quote = find_automation_quote(text)
         if quote:
             c.terms_status = "forbids_automation"
             c.terms_url = url
             c.terms_evidence = quote
             return
-    if read_any:
+    if read_website_terms:
         c.terms_status = "ok"
     else:
         c.terms_status = "unknown"
-        st.notes.append("no terms page found or readable" if not links else "terms page(s) could not be read")
+        if read_other:
+            st.notes.append("only purchase or sales conditions were found; no website terms of use")
+        else:
+            st.notes.append("no terms page found or readable" if not links else "terms page(s) could not be read")
 
 
 def _sample_feed(c: Candidate, listing: Page, f: GatedFetcher, settings: ScoutSettings, today: date,

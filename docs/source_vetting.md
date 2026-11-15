@@ -208,3 +208,29 @@ Produced by `atlas/scout/vet.py` through the Compliance Gate (same identified ag
 **Where the automatic verdict looks wrong**
 - canada.ca (found as `natural-resources.canada.ca`) was marked `forbids_automation`. The quoted sentence is a CAPTCHA notice ("...an automated program (also known as a "robot" or a "bot")"), not a ban on our use. The terms scan is deliberately strict (see `decisions.md`); a person has to read that terms page before rejecting it.
 - Domains under `canada.ca` are treated as one site (registered domain `canada.ca`); only `gc.ca` is in the two-label suffix list.
+
+
+## Phase 2: hand-check of the scout's finds (2026-11-16)
+
+Method: for each candidate the website terms were located through the site footer and read in full (whole page
+searched for robot, spider, scrape, crawl, bot, harvest, data mining, automated, machine learning, artificial
+intelligence). Robots.txt and the feed were read through the Compliance Gate, 3 s between requests.
+
+| Site | Hand verdict | Evidence | In register |
+|---|---|---|---|
+| fs-elliott.com | ok | Terms of Use, about 19,700 characters, no automation clause; robots allow; RSS newest 5 Nov 2026 | `fs_elliott_news`, proposed |
+| burckhardtcompression.com | ok | Terms of use page (about 2,700 characters), no automation clause; robots allow; RSS newest 3 Nov 2026 | `burckhardt_compression_news`, proposed, region CH |
+| sundyne.com | **forbids automation** | Footer links to Honeywell's website terms: "use any robot, spider, or other automatic device, process, or means to access the Site for any purpose, including monitoring or copying any of the material on the Site"; also bans use for AI training | `sundyne_news`, blocked |
+| powerexinc.com | unknown, not used | Only sales terms found, no website terms; newest feed item 28 Feb 2024 (stale) | no |
+| mikropor.com | ok, not promoted | Legal notice and terms of use (about 4,600 characters) has no automation clause, but the server drops our connection about one time in three (RemoteProtocolError) | no (stays a scout candidate) |
+| gascompressionmagazine.com, nwpump.com, sullivan-palatek.com | unknown, not used | Robots allow and a dated RSS feed exists, but the site shows no terms page at all (only a privacy policy). Needs the owner's written permission | no |
+| Canadian English-language sources | none found | Every Canadian seed was refused by robots.txt (canadianmanufacturing.com, plant.ca, mromagazine.com, automationmag.com, cme-mec.ca) or forbids automation (canada.ca) | no |
+
+**Where the automatic verdict was wrong, and the fix (`atlas/scout/vet.py`)**
+- **Sundyne: said ok, actually forbidden.** It read Sundyne's purchase conditions instead of the website terms, which are Honeywell's. Fix: purchase, sales and supplier conditions never count as "terms ok"; a parent company's footer "Terms" link is followed (but not third-party platforms such as Google or Facebook).
+- **Powerex: said ok, actually unknown.** Same cause (sales terms only).
+- **Burckhardt: right answer, wrong page.** It read the sales terms; the website Terms of use is now read first.
+- **Mikropor: briefly marked forbidden.** The first version of the fix followed a Google "Terms" link from a footer widget. Third-party platforms are now excluded.
+- A redirect inside the host of a page we asked for (a parent's terms page) is now followed; a redirect to any other site is still refused.
+
+The scout's earlier demo run (run 20261115T192521Z) had read 3 pages from sundyne.com before this fix. None reached the output (0 passed the filter), but the run should be repeated with the corrected vetter; see `docs/decisions.md`.

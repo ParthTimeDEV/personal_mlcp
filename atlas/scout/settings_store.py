@@ -11,6 +11,8 @@ the file: defaults are never substituted silently.
 from __future__ import annotations
 
 from datetime import date
+
+from dateutil.relativedelta import relativedelta
 from pathlib import Path
 
 import yaml
@@ -101,7 +103,8 @@ def usable_sources(settings: ScoutSettings, candidates: list[Candidate],
     """Candidates that may be used in a run, as Sources (origin="discovered", status="proposed").
 
     A candidate is included only if ALL of these hold: settings.use_discovered_sources; candidate.usable;
-    trust_score >= settings.min_trust_score; its type is in settings.source_types; no "rejected" decision;
+    trust_score >= settings.min_trust_score; its type is in settings.source_types; its newest item is inside
+    the recency window and its relevance sample is not zero; no "rejected" decision;
     and (when `register` is given) its site is not already in the register. An "accepted" decision does not
     override anything: it can never make an unusable candidate usable. Nothing here approves a source for
     Atlas Copco: status stays "proposed".
@@ -109,12 +112,17 @@ def usable_sources(settings: ScoutSettings, candidates: list[Candidate],
     if not settings.use_discovered_sources:
         return []
     rejected = {d.candidate_id for d in decisions if d.decision == "rejected"}
+    oldest_useful = (date.today() - relativedelta(months=settings.recent_months)).isoformat()
     out: list[Source] = []
     seen_ids: set[str] = set()
     for c in candidates:
         if (not c.usable or c.trust_score < settings.min_trust_score
                 or c.type_guess not in settings.source_types
                 or c.candidate_id in rejected or c.candidate_id in seen_ids):
+            continue
+        # A source with nothing inside the recency window, or whose sampled titles never mention a
+        # compressor, cannot give the run anything: reading it only wastes polite requests.
+        if (c.newest_item_date or "") < oldest_useful or (c.relevance_sample is not None and c.relevance_sample <= 0):
             continue
         if register and any(same_site(c.url, s.url) for s in register):
             continue

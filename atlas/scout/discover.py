@@ -150,7 +150,7 @@ class Page:
 
 class GatedFetcher:
     """GET through the Compliance Gate with a request budget. Redirects are followed by hand, each hop
-    re-checked, and never off the candidate's own site. `requests` counts every HTTP request made here
+    re-checked, and never off the site asked for (the candidate's own, or a parent's terms page). `requests` counts every HTTP request made here
     (robots.txt is fetched by the gate itself, once per host, and is not counted)."""
 
     def __init__(self, gate: ComplianceGate, probe: Source, budget: Optional[int] = None) -> None:
@@ -187,7 +187,7 @@ class GatedFetcher:
                 raise RateLimited(self.refusal)
             if 300 <= resp.status < 400 and resp.location:
                 nxt = urljoin(current, resp.location)
-                if not same_site(nxt, self.probe.url):
+                if not same_site(nxt, self.probe.url) and not same_site(nxt, url):  # url: the host asked for
                     self.refusal = "redirect_off_host"
                     return None
                 current = nxt

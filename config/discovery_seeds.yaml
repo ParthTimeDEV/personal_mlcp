@@ -17,7 +17,6 @@
 
 # ---------- US compressor makers and distributors (competitors) ----------
 - {name: FS-Curtis, url: "https://www.fscurtis.com/", type_guess: competitor, region: US, verified: false, why: "US rotary screw and reciprocating compressor maker (FS-Elliott group)"}
-- {name: FS-Elliott, url: "https://www.fs-elliott.com/", type_guess: competitor, region: US, verified: false, why: "Oil-free centrifugal compressors, Pennsylvania"}
 - {name: Elliott Group, url: "https://www.elliott-turbo.com/", type_guess: competitor, region: US, verified: false, why: "Large centrifugal compressors and turbomachinery, Pennsylvania"}
 - {name: Kaishan USA, url: "https://www.kaishanusa.com/", type_guess: competitor, region: US, verified: false, why: "Rotary screw compressors sold in the US"}
 - {name: Sullivan-Palatek, url: "https://www.sullivan-palatek.com/", type_guess: competitor, region: US, verified: false, why: "US maker of portable and stationary air compressors, Indiana"}
@@ -39,10 +38,8 @@
 - {name: Pfeiffer Vacuum, url: "https://www.pfeiffer-vacuum.com/", type_guess: competitor, region: US, verified: false, why: "Vacuum pumps and systems; global group with US sites"}
 
 # ---------- gas and hydrogen compression ----------
-- {name: Burckhardt Compression, url: "https://www.burckhardtcompression.com/", type_guess: competitor, region: US, verified: false, why: "Reciprocating gas compressors including hydrogen; US subsidiary"}
 - {name: Hydro-Pac, url: "https://www.hydropac.com/", type_guess: competitor, region: US, verified: false, why: "High-pressure gas and hydrogen compressors, Pennsylvania"}
 - {name: PDC Machines, url: "https://www.pdcmachines.com/", type_guess: competitor, region: US, verified: false, why: "Hydrogen compressors, Pennsylvania"}
-- {name: Sundyne, url: "https://www.sundyne.com/", type_guess: competitor, region: US, verified: false, why: "Compressors and pumps for hydrogen and process gas, Colorado"}
 - {name: Westport Fuel Systems, url: "https://www.westport.com/", type_guess: competitor, region: CA, verified: false, why: "Gas fuel and hydrogen systems, Vancouver"}
 
 # ---------- trade publications ----------

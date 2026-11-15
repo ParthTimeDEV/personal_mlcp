@@ -132,3 +132,14 @@ def test_site_already_in_register_is_skipped():
 
 def test_duplicate_candidate_ids_produce_one_source():
     assert len(ss.usable_sources(ON, [cand(), cand()], [])) == 1
+
+
+def test_a_source_with_nothing_in_the_recency_window_is_not_used():
+    assert ss.usable_sources(ON, [cand(newest_item_date="2015-03-18")], []) == []
+    assert ss.usable_sources(ON, [cand(newest_item_date=None)], []) == []
+    assert len(ss.usable_sources(ON, [cand(newest_item_date=date.today().isoformat())], [])) == 1
+
+
+def test_a_source_whose_sampled_titles_never_mention_a_compressor_is_not_used():
+    assert ss.usable_sources(ON, [cand(relevance_sample=0.0)], []) == []
+    assert len(ss.usable_sources(ON, [cand(relevance_sample=0.1)], [])) == 1
