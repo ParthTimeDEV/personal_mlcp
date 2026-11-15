@@ -33,7 +33,10 @@ pytest -q                                          # unit tests (offline)
 Phase 2 (see `parent2.md`): saved settings (`settings/scout_settings.json`) control scope, filter rules and the
 scout engine; candidates and decisions live in `scout/`; a run groups items into stories and, when a source is
 refused, switches to coverage of the same companies from other allowed sources (labelled `via_fallback`).
-The frontend is started with `streamlit run app/main.py`; reports are built by `atlas.report.build.write_report'
+The frontend is started with `.venv\Scripts\python.exe -m streamlit run app/main.py` (use the project's Python,
+not Anaconda's). Reports: `atlas.report.onepager.write_onepager(run_id, fmt)` builds the one-page summary (one slide or
+page), `atlas.report.build.write_report(run_id, fmt)` the full report.
+
 A run writes `source_register/`, `raw/`, `clean/`, `facts/`, `output/poc_<run_id>.json` and `logs/<run_id>.json`
 to the Volume `/Volumes/atlas_poc/default/data/<prefix>`, prints a per-source summary, and ends with a
 local-data check. Exit code 0 means the output validated and nothing went wrong; blocked sources are reported
