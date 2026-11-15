@@ -390,6 +390,18 @@ def test_region_phrases_that_are_not_the_country():
     assert detect_region(src, "Acme opens a plant in Baja California", "") == "MX"
 
 
+def test_region_outside_north_america_is_none_not_the_source_region():
+    # seen live on 15 Nov: both were tagged US because the source is US-based
+    src = make_source(region="US")
+    assert detect_region(src, "Atlas Copco Group Acquires Compressed Air Sales and Service Company in Central Portugal",
+                         "The company is based in Agueda, Portugal.") is None
+    assert detect_region(src, "Fluke Unveils Its Most Powerful Acoustic Imagers",
+                         "Eindhoven, Netherlands - Fluke introduced two new acoustic imagers.") is None
+    # a foreign mention outnumbered by US places keeps the US
+    assert detect_region(src, "Swedish group opens compressor plant in Texas",
+                         "The plant in Houston, Texas will serve Ohio customers.") == "US"
+
+
 def test_title_counts_double():
     # one Canadian hit in the title (2) beats one US hit in the text (1)
     assert detect_region(make_source(region="global"), "Acme opens plant in Ontario", "It ships to Texas.") == "CA"

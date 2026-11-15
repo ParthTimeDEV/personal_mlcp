@@ -89,8 +89,8 @@ def test_unknown_format_raises(env):
 
 def test_numbers_equal_envelope_counts(env):
     n_items = len(env.items)
-    n_sources = len(env.sources)
-    with_items = sum(1 for s in env.sources if s.items_passed > 0)
+    n_sources = sum(1 for s in env.sources if s.kind != "fallback")
+    with_items = sum(1 for s in env.sources if s.items_passed > 0 and s.kind != "fallback")
     refused = sum(1 for s in env.sources if (s.note or "").startswith("refused"))
     fallback = sum(1 for i in env.items if i.via_fallback)
     data = compute(env)
@@ -279,3 +279,21 @@ def test_phase1_style_envelope_without_phase2_fields(env):
     assert "No story was seen in two or more independent sources in this run." in slides[6]
     assert "No switching was needed in this run." in slides[7]
     assert build_report(old, "pdf").startswith(b"%PDF")
+
+
+def test_real_run_wording(env):
+    """From the 15 Nov live run: a switching row is not a source, "other" is not a type of news, and a
+    switch that found nothing is reported, not hidden."""
+    fb = [s for s in env.sources if s.kind == "fallback"][0]
+    tried = fb.model_copy(update={"items_passed": 0})
+    sources = [tried if s.kind == "fallback" else s for s in env.sources]
+    items = [i.model_copy(update={"via_fallback": False, "fallback_for": None,
+                                  "event_type": "other" if n < 9 else i.event_type}) for n, i in enumerate(env.items)]
+    data = compute(env.model_copy(update={"sources": sources, "items": items}))
+    assert data.n_sources == len(env.sources) - 1
+    general = sum(1 for i in items if i.event_type == "other")
+    assert any(s.startswith(f"Apart from {general} general articles, the most common type of news is")
+               for s in data.summary_sentences)
+    slides = "\n".join(pptx_text(build_report(env.model_copy(update={"sources": sources, "items": items}), "pptx")))
+    assert "Switching was tried for Delta Compressors Newsroom: no items about it were found" in slides
+    assert "No switching was needed in this run." not in slides

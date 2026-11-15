@@ -175,6 +175,7 @@ class ReportData:
     sources: list[SourceRow]
     refused: list[SourceRow]
     switching: list[tuple[str, list[str]]]
+    switching_empty: list[str]
     scope_lines: list[str]
     summary_sentences: list[str]
     notes: dict[str, str] = field(default_factory=dict)
@@ -281,14 +282,19 @@ def _summary(d: dict) -> list[str]:
     if named:
         out.append(f"{_n(len(named), 'company', 'companies')} named; the most frequent is {named[0][0]} "
                    f"({_n(named[0][1], 'item')}).")
-    events = [(e, n) for e, n in d["by_event_type"] if e != NOT_STATED]
+    events = [(e, n) for e, n in d["by_event_type"] if e not in (NOT_STATED, "other")]
+    general = dict(d["by_event_type"]).get("other", 0)
     if events:
-        out.append(f"The most common type of news is {events[0][0]} ({_n(events[0][1], 'item')}).")
+        lead = f"Apart from {_n(general, 'general article')}, the" if general else "The"
+        out.append(f"{lead} most common type of news is {events[0][0]} ({_n(events[0][1], 'item')}).")
+    elif general:
+        out.append(f"All dated news items are general articles ({_n(general, 'item')}); none reports a specific event.")
     out.append(f"{_n(d['n_multi_source_stories'], 'story', 'stories')} seen in two or more independent sources.")
     out.append(
         f"{_n(d['n_refused'], 'source')} refused by the compliance gate; "
         f"{_n(d['n_fallback_items'], 'item')} from switching to other allowed sources."
     )
+    # (sources counted above exclude the rows that only record a switching attempt)
     return out
 
 
@@ -335,9 +341,13 @@ def compute(envelope: OutputEnvelope) -> ReportData:
     for item in envelope.items:
         if item.via_fallback:
             switching.setdefault(name_of(item.fallback_for) or "(not recorded)", set()).add(item.source_name)
+    tried_empty: list[str] = []
     for s in source_rows:
-        if s.kind == "fallback" and s.fallback_for and s.passed > 0:
-            switching.setdefault(s.fallback_for, set()).add(s.name)
+        if s.kind == "fallback" and s.fallback_for:
+            if s.passed > 0:
+                switching.setdefault(s.fallback_for, set()).add(s.name)
+            elif s.fallback_for not in switching:
+                tried_empty.append(s.fallback_for)
 
     items_by_id = {i.id: i for i in envelope.items}
     story_rows: list[StoryRow] = []
@@ -368,8 +378,8 @@ def compute(envelope: OutputEnvelope) -> ReportData:
     n_candidates = len(candidates) if isinstance(candidates, list) else int(candidates or 0)
     d = dict(
         run_id=envelope.run_id, run_date=envelope.generated_at[:10], generated_at=envelope.generated_at,
-        n_items=len(envelope.items), n_sources=len(envelope.sources),
-        n_sources_with_items=sum(1 for s in envelope.sources if s.items_passed > 0),
+        n_items=len(envelope.items), n_sources=sum(1 for s in envelope.sources if s.kind != "fallback"),
+        n_sources_with_items=sum(1 for s in envelope.sources if s.items_passed > 0 and s.kind != "fallback"),
         n_refused=len(refused), n_discovered=sum(1 for s in source_rows if s.discovered),
         n_stories=len(envelope.stories), n_multi_source_stories=len(story_rows),
         n_fallback_items=sum(1 for i in envelope.items if i.via_fallback),
@@ -387,6 +397,7 @@ def compute(envelope: OutputEnvelope) -> ReportData:
         top_items=ranked[:TOP_ITEMS], all_items=ranked, headline_items=ranked[:HEADLINE_ITEMS],
         stories=story_rows, sources=source_rows, refused=refused,
         switching=sorted((k, sorted(v)) for k, v in switching.items()),
+        switching_empty=sorted(set(tried_empty) - set(switching)),
         scope_lines=_scope_lines(envelope, d["n_sources_with_items"], d["n_sources"]),
         summary_sentences=_summary(d),
     )
@@ -435,8 +446,11 @@ def compliance_lines(d: ReportData) -> list[str]:
                  f"compliance gate recorded. They were not contacted and not bypassed."]
     else:
         lines = ["Refused sources: 0."]
-    lines += ([f"Coverage for {k} came from {', '.join(v)}." for k, v in d.switching]
-              or ["No switching was needed in this run."])
+    lines += [f"Coverage for {k} came from {', '.join(v)}." for k, v in d.switching]
+    lines += [f"Switching was tried for {k}: no items about it were found in other allowed sources."
+              for k in d.switching_empty]
+    if not d.switching and not d.switching_empty:
+        lines.append("No switching was needed in this run.")
     return lines
 
 

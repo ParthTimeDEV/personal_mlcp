@@ -138,3 +138,63 @@ mx_locations:
   - Tijuana
   - Saltillo
   - Puebla
+
+# Places outside North America (extract.py, region rule only; filter.py does not read this list).
+# When the title + text name these at least as often as the most-named North American region, the item
+# is about somewhere else, so region stays null instead of falling back to the source's own region
+# (seen live: Atlas Copco buying a company in Portugal, a Fluke release dated Eindhoven, Netherlands).
+other_locations:
+  - Europe
+  - European
+  - Portugal
+  - Portuguese
+  - Spain
+  - Spanish
+  - Germany
+  - German
+  - France
+  - Italy
+  - Italian
+  - Netherlands
+  - Dutch
+  - Belgium
+  - Sweden
+  - Swedish
+  - Norway
+  - Denmark
+  - Finland
+  - Poland
+  - Austria
+  - Switzerland
+  - Swiss
+  - United Kingdom
+  - UK
+  - Britain
+  - British
+  - England
+  - Ireland
+  - Turkey
+  - China
+  - Chinese
+  - Japan
+  - Korea
+  - India
+  - Australia
+  - Brazil
+  - Argentina
+  - Chile
+  - Colombia
+  - Peru
+  - South Africa
+  - Saudi Arabia
+  - United Arab Emirates
+  - UAE
+  - Singapore
+  - Malaysia
+  - Thailand
+  - Vietnam
+  - Indonesia
+  - Taiwan
+  - Asia
+  - Africa
+  - Middle East

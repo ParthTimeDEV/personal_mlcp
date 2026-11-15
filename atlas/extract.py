@@ -103,7 +103,7 @@ def _resolve(path: str) -> Path:
 def _load_keywords(path: str = "config/keywords.yaml") -> dict[str, list[str]]:
     with open(_resolve(path), encoding="utf-8") as fh:
         data = yaml.safe_load(fh) or {}
-    keys = ("compressor", "industrial", "us_locations", "ca_locations", "mx_locations")
+    keys = ("compressor", "industrial", "us_locations", "ca_locations", "mx_locations", "other_locations")
     return {key: [str(t) for t in (data.get(key) or [])] for key in keys}
 
 
@@ -525,16 +525,29 @@ def _region_counts(text: str) -> Counter:
     return counts
 
 
+def _other_count(text: str) -> int:
+    """Hits for places outside North America (config/keywords.yaml other_locations)."""
+    if not text:
+        return 0
+    for phrase, _ in REGION_PHRASES:  # "Latin America" etc. are not a foreign-country hit either
+        text = _term_regex(phrase).sub(" ", text)
+    return sum(_count_location(t, text) for t in _load_keywords()["other_locations"])
+
+
 def detect_region(source: Source, title: str | None, text: str) -> Region | None:
     """US, CA or MX when the item itself is clearly about that region: the region with the most place
-    hits in title + text (title hits count double). A tie means conflicting locations: None. No hit at
-    all: the source's own region, if the source is based in one of the three; otherwise None.
-    Never defaults to US."""
+    hits in title + text (title hits count double). A tie means conflicting locations: None. Places
+    outside North America named at least as often as the top region: the item is about somewhere
+    else, None. No hit at all: the source's own region, if the source is based in one of the three;
+    otherwise None. Never defaults to US."""
     counts = Counter()
     for region, n in _region_counts(title or "").items():
         counts[region] += 2 * n
     counts.update(_region_counts(text or ""))
+    other = 2 * _other_count(title or "") + _other_count(text or "")
     ranked = [(r, n) for r, n in counts.most_common() if n > 0]
+    if other and (not ranked or other >= ranked[0][1]):
+        return None
     if ranked:
         if len(ranked) > 1 and ranked[0][1] == ranked[1][1]:
             return None

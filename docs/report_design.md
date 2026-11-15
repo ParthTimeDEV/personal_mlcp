@@ -70,6 +70,26 @@ appendix paginates by itself (the table header repeats on every page).
   refused line points to the table instead of a list that was cut off. The same titles showed two
   event-type rule fixes (a distributor meeting is an `event`; "<PERSON> COO of ..." is an
   `appointment`), now in tests.
-- **Still to do (S9 live check):** run `python -m atlas.run --max-items 5` under `dev/sachi`, then
-  `write_report(run_id, "pptx")` and `"pdf"`, download both from the Volume UI, read every slide, and
-  record the result here.
+- Live run (S9), 15 Nov 2026, run `20261115T045141Z` under `dev/sachi` (`atlas.run --max-items 5`,
+  default settings, regions US): `write_report` built and uploaded `reports/report_20261115T045141Z.pptx`
+  and `.pdf`. Read every slide and page against the run's own printout: 13 items from 3 of 11 sources,
+  6 refused sources with the gate's reasons, Ingersoll Rand switching tried with 0 items, 0 stories in
+  two or more sources. Links open the right articles; no text overflow. Three wording fixes came out of
+  it: the row that records a switching attempt is no longer counted as a source ("3 of 12" -> "3 of 11");
+  "other" is no longer reported as the most common type of news ("Apart from 8 general articles, the
+  most common type of news is award"); and a switch that found nothing is now stated ("Switching was
+  tried for Ingersoll Rand (irco.com): no items about it were found in other allowed sources") instead
+  of "No switching was needed".
+- Real-page check of the same run (title, event type, product, region against the live articles):
+  event types right for all items checked (acquisition, product launch, award x2, event, and "other"
+  for the how-to blog posts); product `OFE1550` right (the Sullair OFE1550 award page); no product
+  invented for the Fluke release, which names two models (ii1050 and ii1030), so `null` is correct;
+  label `fact` right for the Atlas Copco acquisition. One bug found: two articles about places outside
+  North America were tagged `US` because they name no North American place and the rule fell back to
+  the source's region (Atlas Copco buying Iberoair in Agueda, Portugal; a Fluke release dated
+  Eindhoven, Netherlands). Fixed: `config/keywords.yaml` now has `other_locations`, and an item that
+  names places outside North America at least as often as its top North American region gets `null`.
+  The fix applies to new runs; this run's stored items keep `US`.
+- Not verified: the airbestpractices.com page for "Best Practices 2026 EXPO" (company `Kaeser
+  Compressors`, technology `blower`), because the page could not be opened from here. Open it and check
+  that Kaeser is the main company named; if not, the alias count picked a sponsor.
