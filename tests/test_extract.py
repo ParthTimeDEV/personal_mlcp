@@ -587,3 +587,27 @@ def test_hyphenated_machine_words_are_not_a_person():
     from atlas.extract import _looks_like_full_name as full
     assert not full("Delivering Oil-Free")
     assert full("Mary-Ann Smith")
+
+
+def test_how_to_and_guide_titles_are_not_news_events():
+    from atlas.extract import classify_event
+    body = "You size it by checking safety standards and the ISO 8573 purity class for the line."
+    assert classify_event("How To Size an Air Compressor for a Brewery Packaging Line", body) == "other"
+    assert classify_event("A guide to compressed air dryers", "The new regulation applies.") == "other"
+    # a real event title is still found, and body rules still work for ordinary titles
+    assert classify_event("Acme acquires Delta Pumps", body) == "acquisition"
+    assert classify_event("Acme update", "The Department finalised a new standard for compressors.") == "regulation_standard"
+
+
+def test_winning_an_order_is_not_an_award_but_winning_an_award_is():
+    from atlas.extract import classify_event
+    assert classify_event("Burckhardt Compression wins order for the Boaventura Energy Complex", "") == "other"
+    assert classify_event("Acme wins 2026 Innovation Award", "") == "award"
+    assert classify_event("Acme named a winner of the Top Workplaces list", "") == "award"
+    assert classify_event("Acme won the industry prize for efficiency", "") == "award"
+
+
+def test_numbered_episodes_are_not_launches():
+    from atlas.extract import classify_event
+    assert classify_event("Lifecycle Optimization for Centrifugal Air Compressors, Episode 1: Measuring Energy",
+                          "FS-Elliott introduces a new video series.") == "other"

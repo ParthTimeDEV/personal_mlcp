@@ -630,7 +630,9 @@ EVENT_RULES: dict[str, dict[str, list[str]]] = {
                   rf"<PERSON>,? (?:as |the )?(?:new )?{_ROLE}"],
     },
     "award": {
-        "any": [r"wins", r"won", r"awarded", r"awards?", r"named (?:a |the )?winner", r"recogni[sz]ed",
+        # "wins an order" is a sale, not an award: wins/won count only next to an award word
+        "any": [r"wins (?:an? |the )?(?:[\w-]+ ){0,3}?(?:award|prize|trophy|recognition|honou?rs?)",
+                r"won (?:an? |the )?(?:[\w-]+ ){0,3}?(?:award|prize|trophy)", r"awarded", r"awards?", r"named (?:a |the )?winner", r"recogni[sz]ed",
                 r"honou?red", r"top workplaces?"],
         "title": [],
     },
@@ -645,6 +647,11 @@ for _cat, _rules in EVENT_RULES.items():
     _any = re.compile(r"(?<!\w)(?:" + "|".join(_rules["any"]) + r")(?!\w)", re.IGNORECASE) if _rules["any"] else None
     _ttl = re.compile(r"(?<!\w)(?:" + "|".join(_rules["title"]) + r")(?!\w)", re.IGNORECASE) if _rules["title"] else None
     _EVENT_REGEX[_cat] = (_any, _ttl)
+
+# Titles of explainers and guides. Their body text talks about standards, regulations or agreements without
+# reporting any such event.
+EDUCATIONAL_TITLE = re.compile(
+    r"(?<!\w)(?:how to|episode \d+|how do|how does|what is|what are|why \w+|guide to|guide|tips|checklist|\d+ ways|best practices for|explained|basics of|beginner)(?!\w)", re.IGNORECASE)
 
 EVENT_SIGNAL_SENTENCES = 3  # how many opening sentences extract_item passes as `text_signals`
 
@@ -675,6 +682,8 @@ def classify_event(title: str | None, text_signals: str) -> EventType | None:
         found = _event_in(title or "", include_title_rules=True)
         if found:
             return found  # type: ignore[return-value]
+    if usable and EDUCATIONAL_TITLE.search(title or ""):
+        return "other"  # a how-to or guide is not news; body words such as "standards" must not make it one
     if text_signals and text_signals.strip():
         found = _event_in(text_signals, include_title_rules=False)
         if found:
