@@ -350,3 +350,58 @@ NEXT
 NEED FROM OTHERS
 ```
 Do not write "works" unless you ran it and saw the result.
+
+---
+
+## 20. Progress reports
+
+Each person adds their report below, newest at the bottom, in the format above.
+
+### Sachi, 15 Nov 2026
+WHO / WHEN
+Sachi, 15 Nov 2026
+
+DONE: pushed to main
+
+24cb246: Part A + Part B
+· Part A, extraction (atlas/extract.py, atlas/clean.py, config/technologies.yaml, keywords.yaml, aliases.yaml, new config/products.yaml): region (US/CA/MX), event type and product detection, plus the new technologies, keywords, aliases and products
+· Part B, report package (atlas/report/: build.py, charts.py, pptx_builder.py, pdf_builder.py)
+· tests (test_extract, test_clean, test_report + fixture) and docs (docs/report_design.md, docs/decisions.md)
+43bc704: fixes from the live check
+· places outside North America now give region null instead of US
+· a switching row is no longer counted as a source
+· “other” is not reported as the most common type of news
+· a switch that found nothing is now stated in the report
+
+WORKS (I ran it):
+
+.venv/bin/python -m pytest -q -> 339 passed
+python -m atlas.storage_check (prefix dev/sachi) -> PASS
+python -m atlas.run --max-items 5 -> run 20261115T045141Z: 13 items from 3 of 11 sources, 6 refused, Ingersoll Rand switching tried with 0 items, 0 multi-source stories
+write_report(‘20261115T045141Z’, ‘pptx’ / ‘pdf’) -> /Volumes/atlas_poc/default/data/dev/sachi/reports/report_20261115T045141Z.pptx and .pdf
+Read both reports in the Volume UI: numbers match the run, links open the right articles, no text overflow, new wording shows
+Hand-checked 7 items against their live pages:
+· event types right (acquisition, product launch, award x2, event, other)
+· product OFE1550 right; Fluke item correctly has no product (the article names two models)
+· Best Practices 2026 EXPO: company Kaeser, technology blower, both right
+
+FAILED / NOT WORKING:
+
+In this run, 2 items are still tagged US although they are about Portugal and the Netherlands. The fix applies only to new runs; the stored items were not changed.
+0 fallback items in this run, so no fallback item could be hand-checked yet.
+
+ASSUMPTIONS / DECISIONS NEEDED:
+
+Region stays null when an article names places outside North America at least as often as US/CA/MX places. It never defaults to US.
+Report layout is our own neutral design. No Atlas Copco template has been received yet (open question 5).
+
+NEXT:
+
+Rebuild the reports from the D3 full run (discovery + fallback on) and hand-check 3 fallback items once a run produces them.
+Hand-check 3 more items so the total reaches 10.
+
+NEED FROM OTHERS:
+
+Nikhil: the default regions [“US”] drops US-source articles about Canada and Mexico. Should the default be US, CA and MX? Also, story grouping joined two unrelated Sullair “other” articles into one story.
+Parth: the frontend report button calls atlas.report.write_report(run_id, “pptx” or “pdf”). It returns the Volume path.
+Ragini: new companies were added to config/aliases.yaml. Please pull before editing it.
