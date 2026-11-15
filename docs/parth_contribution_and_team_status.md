@@ -1,249 +1,182 @@
-# Atlas Copco Market & Technology PoC: Master Project Status & Team Handover
+# Atlas Copco Market & Technology PoC: Parth Contribution Record & Phase 2 Delivery Status
 
-**Author:** Parth (Quality Assurance, Documentation & Frontend Lead)  
+**Author:** Parth (Quality Assurance, Documentation & Frontend Lead, Group 8, VIT Pune)  
 **Date:** 15 November 2026  
-**Repository Branch:** `feature/parth-documentation-evidence`  
-**Latest Integrated Upstream Commit:** `d0e0e14` (Phase 2 Progress Report & Live Verification)  
-**Test Suite Health:** **339 of 339 tests passing** (`pytest -q` in 39.7s)
+**Repository Branch:** `feature/parth-phase2-frontend`  
+**Target Pull Request Base:** `https://github.com/nikhil191206/personal_mlcp.git` (`main`)  
+**Developer Fork:** `https://github.com/ParthTimeDEV/personal_mlcp.git`  
+**Test Suite Health:** **408 of 408 tests passing** (`pytest -q` in 49.39s, 100% pass rate)  
+**Frontend Logic Suite:** **69 of 69 tests passing** (`pytest tests/test_app_logic.py -q` in 5.94s)  
 
 ---
 
-## A. Executive Summary
+## A. Project and Role
 
-### What the Project Does
-The Atlas Copco Market & Technology Proof of Concept (PoC) is an automated intelligence pipeline designed for Atlas Copco's Compressor Technique business area. Atlas Copco grows aggressively through acquisitions (29 announced in 2025) and requires proactive visibility into market developments, technological innovations, and competitor moves in North America.
+### Project Context
+The **Atlas Copco Market & Technology Intelligence Proof of Concept (PoC)** delivers automated, high-precision competitive intelligence for Atlas Copco's **Compressor Technique** business area. The platform scouts North American industrial news, product announcements, facility expansions, acquisitions, leadership appointments, and regulatory filings across the USA, Canada, and Mexico.
 
-To solve this without over-engineering or violating strict enterprise governance:
-1. **Automated Scout Engine:** Evaluates public USA, Canadian, and Mexican industry sources against robots.txt and website terms of use.
-2. **Transparent Fact Extraction:** Ingests articles, strips all personally identifiable information (PII) using Presidio and spaCy, classifies industrial events and equipment, and discards full page text in memory.
-3. **Enterprise Relevance Filtering:** Evaluates extracted metadata against four transparent criteria (compressor relevance, North American geography, source credibility, and 12-month freshness).
-4. **Resilient Switching & Story Clustering:** If a source is blocked, the engine switches to secondary allowed coverage without bypassing security. Related articles across sources are grouped into unified multi-source stories.
-5. **Zero Local Storage Compliance:** All persistent states, logs, JSON envelopes, and generated executive reports (PDF and PPTX) reside strictly within cloud storage (Databricks Unity Catalog Volumes).
+The system adheres strictly to enterprise compliance standards:
+- **Zero Local Data Footprint:** Scraped web pages, full article texts, intermediate JSON files, and generated executive reports are never saved to local laptop filesystems; all persistent records reside in Databricks Unity Catalog Volumes.
+- **Strict Compliance:** The compliance gate validates `robots.txt`, website terms of use, polite request delays ($\ge 3$s), and official User-Agent headers before any fetch.
+- **Privacy & PII Stripping:** Personally identifiable information (PII) is scrubbed using Microsoft Presidio and spaCy before text classification, with article body text discarded from memory.
+- **Token Security:** Cloud credentials are never logged, displayed in the UI, or passed through command-line arguments.
 
-### Current Project State
-* **Phase 1 (The Core PoC):** **100% Implemented and Verified.** The end-to-end backend pipeline (`atlas/compliance.py`, `collect.py`, `extract.py`, `clean.py`, `filter.py`, `run.py`, `storage.py`) operates reliably with zero local storage.
-* **Phase 2 (Scout Engine & Scope Expansion):** **Advanced Implementation.** 
-  - Discovery and automated vetting (`atlas/scout/discover.py`, `vet.py`) are built and tested (Ragini).
-  - Settings store, switching logic, story clustering, and pipeline orchestration (`atlas/scout/settings_store.py`, `fallback.py`, `stories.py`, `run.py`) are integrated (Nikhil).
-  - Extended extraction (regions, event types, products) and executive PDF/PPTX report generation (`atlas/report/`) are verified on live Databricks runs (Sachi).
-  - Streamlit user interface (`app/`) is designed and scheduled for implementation (Parth).
-* **Overall Completion:** Approximately **85% complete**. Core engines and report builders are functional; remaining work centers on frontend assembly, expanding vetted sources, live production runs, and empirical QA checks.
-
----
-
-## B. Latest Repository Updates (Upstream Synchronization)
-
-The local feature branch has been fully synchronised with the upstream repository (`nikhil191206/personal_mlcp`). A total of **9 upstream commits** (`ae10f91` through `d0e0e14`) were integrated seamlessly via merge commit `2f9e582` with zero conflicts.
-
-### Upstream Commit Log Incorporated:
-1. `ae10f91` — *Print live progress during runs; add `prepare.md` and pipeline diagram (`docs/images/pipeline.png`).*
-2. `031d900` — *Add Phase 2 master briefs (`parent2.md`, `wd2.md`, 4 personal files), shared models, storage helpers, and default scout settings.*
-3. `679b84b` — *[nikhil] Phase 2: settings store, settings-aware filter, fallback switching, story clustering, run integration, sample fixtures, and tests.*
-4. `532bb37` — *Update `README.md`.*
-5. `8fc775b` — *[ragini] Phase 2: source discovery, automatic vetting, rule-based trust scoring, discovery seeds, and tests.*
-6. `7bdb870` — *[sachi] Phase 2: region (US/CA/MX), event type, product extraction, and PDF/PPTX report builder package.*
-7. `24cb246` — *[sachi] Report package updates: use `StoryCluster.headline` and `first/last_published` timestamps from Nikhil's models.*
-8. `43bc704` — *[sachi] Live-check bug fixes: non-North-American places yield null region; clearer report wording; Sachi live run results.*
-9. `d0e0e14` — *[sachi] Progress report in `parent2.md` Section 20 documenting live Databricks run `20261115T045141Z`.*
-
-### Key Architecture & Configuration Changes:
-* **Dependencies Updated:** Added `python-pptx`, `reportlab`, and `matplotlib` to `requirements.txt` to power automated slide and document generation.
-* **New Configuration Files:** Added `config/discovery_seeds.yaml` (40 candidate seeds), `config/products.yaml` (compressor model series), and `config/scout_settings.yaml` (runtime settings and watchlist).
-* **Test Suite Expansion:** Total automated unit tests expanded from **127 to 339 tests** (100% pass rate).
+### Parth's Assigned Responsibilities
+As defined in `parth.md` (Phase 1) and `parth2.md` (Phase 2):
+1. **Phase 1 Lead for Documentation, Quality Assurance & Demo Materials:**
+   - Authoring the strategic client questionnaire, industrial glossary, keyword taxonomy, executive demo note, and 8-dimension QA audit rubric.
+2. **Phase 2 Lead for Streamlit Frontend Application (`app/`):**
+   - Architecting and implementing the five operational user interface screens.
+   - Authoring browser-independent pure Python logic modules under `app/lib/`.
+   - Developing comprehensive offline automated test suites in `tests/test_app_logic.py`.
+   - Writing the end-user manual and operational guide (`docs/frontend.md`).
 
 ---
 
-## C. Current System Architecture
+## B. Completed Contributions by Phase & Feature
 
-The pipeline operates as a unidirectional, memory-safe data flow running under Python 3.12:
+### 1. Phase 1 Completed Deliverables (Documentation & QA)
 
+| Deliverable | Repository Path | Description & Technical Details |
+|---|---|---|
+| **Client Questionnaire** | [`docs/questions_for_atlas_copco.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/questions_for_atlas_copco.md) | 10 strategic questions for Atlas Copco Compressor Technique leadership covering source approval, Databricks governance, report templates, topic prioritization, and AI hosting. |
+| **Technical Glossary** | [`docs/glossary.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/glossary.md) | Plain-English explanations of 25+ industrial compressor concepts (rotary screw, centrifugal, oil-free, air end, VSD, CFM/PSI) and pipeline architecture terms (robots.txt, compliance gate, fingerprinting, evidence records). |
+| **Keyword Suggestions** | [`docs/keyword_suggestions.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/keyword_suggestions.md) | Curated additions for `config/keywords.yaml` across compressor types, industrial terms, and US manufacturing hubs, including risk analysis for false-positive triggers. |
+| **Executive Demo Note** | [`docs/demo_note.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/demo_note.md) | One-page executive brief covering system architecture, proposed sources justification, blocked competitor sites analysis, filter mechanics, and open questions. |
+| **QA Audit Rubric** | [`docs/check_results.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/check_results.md) | 8-dimension manual verification framework (title, date, fact/claim, company, technology, facts, PII, filter accuracy) and defect routing procedure. |
+
+---
+
+### 2. Phase 2 Completed Deliverables (Frontend Architecture & 5 Screens)
+
+All frontend components are implemented in `app/` and backed by pure logic in `app/lib/`:
+
+#### A. Entry Point & Environment Context
+- **[`app/main.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/main.py):** Main application entry point configured with wide layout. Features a persistent environment sidebar displaying the active Databricks storage prefix (`ATLAS_PATH_PREFIX`), an automated amber warning banner when operating against primary demo storage (empty prefix), run telemetry, and operational navigation.
+
+#### B. Volume Data Access Layer
+- **[`app/lib/data.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/lib/data.py):** Pure data abstraction interfacing strictly with Databricks Volumes via `atlas.storage`. Implements `@st.cache_data(ttl=60)` with explicit cache clearing (`clear_data_cache()`), chronological run listing (`list_run_ids`), newest run detection (`latest_run_id`), strict Pydantic envelope loading (`load_envelope`), execution log retrieval (`load_log`), and complete items loading (`load_clean_items`) for inspecting failed filter items. Raises `StorageAccessError` with file paths rather than returning stale data.
+
+#### C. Screen 1: Dashboard (`app/pages/1_Dashboard.py`)
+- **Implemented in:** [`app/pages/1_Dashboard.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/pages/1_Dashboard.py), supported by [`app/lib/filters.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/lib/filters.py) and [`app/lib/dashboard.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/lib/dashboard.py).
+- **Features:**
+  - **Overview Telemetry:** Run ID, generation timestamp, technology/region scope, and 6 core metric cards.
+  - **Sources Summary Table:** Per-source status, pages collected, items passed, kind (registered, discovered, fallback), and detailed refusal reasons.
+  - **12-Dimension Item Browser:** All filters combinable in the sidebar (Source, Source Type, Evidence Label, Filter Status, Company, Technology, Event Type, Region, Date Range, Story, Fallback-only toggle, Free-text search).
+  - **Item Detail Expanders:** Plain-English explanations for dropped items using all 12 closed-set filter reason codes (e.g. `no_compressor_keyword` $\rightarrow$ *"No compressor-related word found"*), links opening in new tabs, and story group cross-references.
+  - **Multi-Source Story View:** Prioritizes intelligence confirmed by 2 or more independent sources.
+  - **Visual Analytics:** Native Streamlit charts showing item counts by source, top 10 companies, event types, and monthly timelines.
+  - **In-Memory Exports:** One-click downloads of filtered results as JSON or CSV without writing to local disk.
+
+#### D. Screen 2: Auto Scout Settings Editor (`app/pages/2_Settings.py`)
+- **Implemented in:** [`app/pages/2_Settings.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/pages/2_Settings.py), supported by [`app/lib/settings_ui.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/lib/settings_ui.py).
+- **Features:**
+  - Full configuration of all `ScoutSettings` parameters across 5 groups:
+    1. *Scope:* Regions (US, CA, MX), Technologies (from `config/technologies.yaml`), Event Types.
+    2. *Relevance Filter:* Freshness window (1–60 months), extra compressor keywords, excluded keywords, industrial requirement.
+    3. *Sources:* Allowed source types, use-discovered-sources switch, minimum trust score slider (0–100), max items per source.
+    4. *Scout Engine:* Discovery toggle, fallback switching toggle, max fallback items per source.
+    5. *Watchlist:* Interactive table editor (`st.data_editor`) managing `WatchEntry` records (name, kind, aliases, follow-when-blocked).
+  - Pydantic validation via `build_scout_settings` preventing saving invalid states.
+  - Real-time diff panel (`settings_diff`) showing `field: default → current`.
+  - Save to Volume via `atlas.scout.settings_store.save_settings` and Reset to defaults with confirmation modal.
+
+#### E. Screen 3: Sources & Candidate Vetting (`app/pages/3_Sources.py`)
+- **Implemented in:** [`app/pages/3_Sources.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/pages/3_Sources.py), supported by [`app/lib/sources.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/lib/sources.py).
+- **Features:**
+  - **Prominent Disclaimer Banner:** *"Discovered sources are not approved by Atlas Copco. Accepting here only makes them available to our own runs."*
+  - **Register Tab:** Displays read-only vetted register loaded via `atlas.compliance.load_register`.
+  - **Discovered Candidates Tab:** Loads candidate sources from Databricks storage via `load_candidates()`. Displays trust scores (0–100), itemized `trust_reasons`, terms of use evidence quotes and URLs, robots.txt status, and relevance samples.
+  - **Decisions Workflow:** Accept and Reject buttons with operator attribution and audit notes, saved via `save_decision`.
+  - **Strict Safety Enforcement:** Accept button is **automatically disabled whenever `usable == False`** with an explicit reason explaining why compliance forbids acceptance.
+
+#### F. Screen 4: Run Launcher (`app/pages/4_Run.py`)
+- **Implemented in:** [`app/pages/4_Run.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/pages/4_Run.py), supported by [`app/lib/runner.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/lib/runner.py).
+- **Features:**
+  - Run configuration: source selector from register, max items per source override, and execution switches (`--use-default-settings`, `--no-discovery`, `--no-fallback`).
+  - Subprocess invocation: spawns `python -u -m atlas.run` using `sys.executable` with unbuffered streaming.
+  - Token Security: strictly scans command arguments to block any token keywords; subprocess inherits `.env` directly.
+  - Session Management: prevents concurrent pipeline runs by disabling the Start button while a run is active.
+  - Live progress feedback: real-time progress bar, stage indicator, per-source status breakdown table, and live scrolling console log with download button.
+  - Process controls: dedicated "Stop Pipeline Run" button triggers graceful process termination (`terminate_process`).
+  - Completion handling: clears data cache upon exit code 0, displays summary telemetry, and provides a direct link to the Dashboard; displays specific extracted errors on failure.
+
+#### G. Screen 5: Executive Intelligence Reports (`app/pages/5_Report.py`)
+- **Implemented in:** [`app/pages/5_Report.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/pages/5_Report.py), supported by [`app/lib/report.py`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/app/lib/report.py).
+- **Features:**
+  - Run selection defaulting to latest run in Volume.
+  - Content preview summary derived directly from the run's `OutputEnvelope` (sources checked, verified items, story clusters, publication date window, top companies).
+  - Format selection: PPTX (Executive 16:9 Slide Deck) or PDF (Executive Digest Document).
+  - In-memory generation calling `atlas.report.build.write_report(run_id, fmt)`.
+  - Immediate in-memory download button via `st.download_button`.
+  - Existing reports section listing previously compiled Volume reports under `reports/` with direct download buttons.
+  - Zero local disk writes.
+
+#### H. User Documentation
+- **[`docs/frontend.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/frontend.md):** Comprehensive user guide detailing application startup, architecture, complete screen walkthroughs, troubleshooting matrix, and testing commands.
+
+---
+
+## C. Verification & Automated Test Results
+
+All logic was verified using automated unit and regression test suites:
+
+### 1. Frontend Logic Test Suite (`tests/test_app_logic.py`)
+```powershell
+pytest tests/test_app_logic.py -q
 ```
-                      settings/scout_settings.json (Cloud Storage / Databricks Volume)
-                                        │
-┌────────────── AUTO SCOUT ENGINE ──────┴────────────────────────────────────────────────┐
-│  atlas/scout/discover.py ──► atlas/scout/vet.py ──► scout/candidates.json              │
-│  (Finds seeds, checks robots & terms, scores trust 0-100; usable candidates admitted)   │
-└───────────────────────────────────────┬────────────────────────────────────────────────┘
-                                        │
-                 Vetted Sources Register (config/sources.yaml) + Usable Discovered Sources
-                                        │
-                                        ▼
-┌── STEP 1: COMPLIANCE GATE (atlas/compliance.py) ──────────────────────────────────────┐
-│  Verifies robots.txt, terms of use, polite delays (>=3s), and official User-Agent.    │
-│  Refuses unapproved or forbidden sources; halts politely on HTTP 429/503.             │
-└───────┬───────────────────────────────────────────────────────────────────────────────┘
-        │ Allowed URLs                                  │ Blocked / Refused Sources
-        ▼                                               ▼
-┌── STEP 2: COLLECTOR (atlas/collect.py) ──┐    ┌── STEP 2B: FALLBACK SWITCHING ────────┐
-│  Fetches RSS feeds & listing pages.      │    │  (atlas/scout/fallback.py)             │
-│  Metadata written to raw/<source>/<run>. │    │  Scans other allowed sources for same │
-│  HTML kept in memory; never saved.       │    │  company/product. Labels via_fallback. │
-└───────┬──────────────────────────────────┘    └───────┬────────────────────────────────┘
-        │ Pages in memory                               │
-        ▼                                               │
-┌── STEP 3: EXTRACTOR & CLEANER (atlas/extract.py, clean.py) ───────────────────────────┐
-│  • Trafilatura extracts article text and metadata.                                    │
-│  • Presidio & spaCy redact PII (<PERSON>, <EMAIL>, <PHONE>) with company allow-list.  │
-│  • Rule-based extraction tags Region (US/CA/MX), EventType, Technology, Product.     │
-│  • RapidFuzz maps company aliases; content hashed to SHA-256 fingerprint.             │
-│  • Article body text discarded from memory; clean items written to clean/<source>/<run>│
-└───────┬───────────────────────────────────────────────────────────────────────────────┘
-        │ Cleaned Items
-        ▼
-┌── STEP 4: RELEVANCE FILTER & STORIES (atlas/filter.py, atlas/scout/stories.py) ───────┐
-│  Four-gate evaluation: Compressor Keyword + North America + Credibility + Recency.    │
-│  Stories groups items about the same company/product/event across independent sources.│
-└───────┬───────────────────────────────────────────────────────────────────────────────┘
-        │
-        ▼
-┌── STEP 5: OUTPUT ENVELOPE (atlas/run.py) ─────────────────────────────────────────────┐
-│  Validates OutputEnvelope via Pydantic; writes output/poc_<run_id>.json.              │
-│  Writes execution metrics to logs/<run_id>.json. Verifies zero local disk leakage.    │
-└───────┬───────────────────────────────────────┬───────────────────────────────────────┘
-        │                                       │
-        ▼                                       ▼
-┌── STEP 6: EXECUTIVE REPORTS ──────────┐   ┌── STEP 7: STREAMLIT FRONTEND (Phase 2) ───┐
-│  (atlas/report/build.py)              │   │  (app/main.py, app/pages/)                │
-│  Generates 10-slide PPTX & PDF report │   │  Dashboard, Item Browser, Settings Editor,│
-│  Saved to reports/report_<run_id>.    │   │  Candidate Vetting, Run Launcher, Download│
-└───────────────────────────────────────┘   └───────────────────────────────────────────┘
+**Result:** **69 passed in 5.94s** (100% pass rate).
+- **Section 1 (Data Layer):** 9 tests verifying active prefix detection, demo mode flags, chronological sorting of run IDs, storage error surfacing, envelope Pydantic validation, and log loading.
+- **Section 2 (Filtering Logic):** 11 tests verifying all 12 filter dimensions, sorting by date/company/source, combinable filtering, empty results handling, and text search across titles and key facts.
+- **Section 3 (Settings UI):** 9 tests verifying diff calculations across scalars, lists, and watchlists, form building with Pydantic validation, technology labels loading, watchlist formatting/parsing, and default reset logic.
+- **Section 4 (Runner & Process Management):** 11 tests verifying unbuffered command construction, token exclusion from argv, progress line parsing, run ID extraction, argument validation, process termination with timeout escalation, credential redaction, error extraction, and live progress tracker state transitions.
+- **Section 5 (Dashboard & Visuals):** 7 tests verifying run metrics computation, source summary formatting, multi-source story prioritization, chart data aggregation, and in-memory CSV generation.
+- **Section 6 (Sources & Candidates):** 6 tests verifying disclaimer text, usability enforcement (`can_accept_candidate` disallows `usable == False`), candidate decision construction, and candidate filtering.
+- **Section 7 (Report Generation):** 6 tests verifying format validation (`pptx`/`pdf`), path and MIME resolution, preview metrics extraction, existing report discovery, and in-memory byte generation/error handling.
+
+### 2. Full Repository Regression Test Suite
+```powershell
+pytest -q
 ```
+**Result:** **408 passed in 49.39s** (339 upstream tests + 69 frontend tests, 0 failures, 0 warnings).
+
+### 3. Module Import & Syntax Verification
+Verified that every frontend module and page imports cleanly without runtime errors:
+```powershell
+python -c "import importlib; [importlib.import_module(m) for m in ['app.main', 'app.lib.data', 'app.lib.filters', 'app.lib.settings_ui', 'app.lib.runner', 'app.lib.dashboard', 'app.lib.sources', 'app.lib.report', 'app.pages.1_Dashboard', 'app.pages.2_Settings', 'app.pages.3_Sources', 'app.pages.4_Run', 'app.pages.5_Report']]"
+```
+**Result:** Clean import with 0 syntax or runtime errors.
 
 ---
 
-## D. Completed Work & Supporting Evidence
+## D. Work Not Completed or Requiring External Dependencies
 
-| Component / Task | Owner | Implemented Deliverables | Verification & Evidence | Status |
-| :--- | :---: | :--- | :--- | :---: |
-| **P0: Local Dev Environment** | Parth | Python 3.12 `.venv`, dependencies, spaCy model | 339 unit tests pass in 39.72s | **Complete** |
-| **P1: Client Questionnaire** | Parth | `docs/questions_for_atlas_copco.md` | 10 strategic questions for leadership | **Complete** |
-| **P2: Technical Glossary** | Parth | `docs/glossary.md` | Plain-English industrial & pipeline terms | **Complete** |
-| **P3: Keyword Taxonomy** | Parth | `docs/keyword_suggestions.md` | False-positive risk analysis & merge guide | **Complete** |
-| **P4: Executive Demo Note** | Parth | `docs/demo_note.md` | 1-page brief matching 5 proposed sources | **Template Ready** |
-| **P5: QA Audit Framework** | Parth | `docs/check_results.md` | 8-dimension audit rubric & defect routing | **Framework Ready** |
-| **Scout Engine: Settings & Stories** | Nikhil | `atlas/scout/settings_store.py`, `fallback.py`, `stories.py` | `test_scout_fallback.py`, `test_scout_stories.py` pass | **Complete** |
-| **Pipeline Orchestrator** | Nikhil | `atlas/run.py`, `atlas/filter.py`, `atlas/storage.py` | `test_run.py`, `test_filter.py` pass | **Complete** |
-| **Scout Engine: Discovery & Vet** | Ragini | `atlas/scout/discover.py`, `vet.py`, `discovery_seeds.yaml` | `test_scout_discover.py`, `test_scout_vet.py` pass | **Complete** |
-| **Source Vetting Register** | Ragini | `config/sources.yaml`, `docs/source_vetting.md` | 15 sources vetted; 5 proposed for demo | **Complete** |
-| **NLP Extraction & Scope** | Sachi | `atlas/extract.py`, `clean.py`, `products.yaml` | Region/Event/Product extraction tested | **Complete** |
-| **PDF & PPTX Report Package** | Sachi | `atlas/report/` (`build.py`, `charts.py`, `pdf`, `pptx`) | Tested on live Databricks run `20261115T045141Z` | **Complete** |
+To maintain absolute transparency, the following tasks remain outside Parth's independent offline execution scope:
+
+| Item | Status | Dependency & Rationale | Owner |
+|---|---|---|---|
+| **`docs/check_results_phase2.md`** | **Pending Live Run** | Requires manual auditing of 10 items and 3 fallback items against live web URLs extracted from an end-to-end production Databricks run. | Parth (awaits Nikhil's live run) |
+| **Live Databricks Pipeline Runs** | **Infrastructure Dependent** | Databricks workspace administration, personal access tokens, and cloud execution are restricted to Nikhil. | Nikhil |
+| **Live UI Screenshots** | **Demo Prep Dependent** | Visual browser screenshots for `docs/frontend.md` will be captured during the pre-demo UI rehearsal. | Parth |
+| **Expansion of Proposed Sources** | **Under Review** | Hand-vetting 5 to 7 additional Canadian and specialty compressor sources in `config/sources.yaml`. | Ragini |
+| **Live Switching Verification** | **Pipeline Dependent** | Testing fallback switching under live HTTP 429/blocked conditions across real external domains. | Sachi / Nikhil |
 
 ---
 
-## E. Work in Progress
+## E. Scope and Boundaries
 
-1. **Streamlit Frontend Application (`app/`):** Assigned to Parth in Phase 2 (`parth2.md`). Structure designed; UI logic modules (`app/lib/`) and 5 screens scheduled for implementation.
-2. **Expansion of Hand-Vetted Sources:** Ragini is evaluating 5 to 7 additional sources across Canada and specialized technologies (air treatment, blowers, vacuum, gas compressors) to expand the register from 5 to 10-12 proposed sources.
-3. **Live Fallback Verification:** Live run `20261115T045141Z` encountered 0 fallback items because no watch entry matched the refused sources. Sachi and Nikhil are aligning watch entries to test switching under real network conditions.
-
----
-
-## F. Pending Tasks & Operational Ownership
-
-In strict alignment with team governance, **Databricks workspace administration, tokens, cloud connectivity, pipeline execution, and Volume screenshots are owned by Nikhil**. Parth performs downstream quality assurance once actual pipeline records are generated.
-
-| Priority | Task Description | Owner | Dependencies / Blockers | Exact Next Action | Milestone |
-| :---: | :--- | :---: | :--- | :--- | :---: |
-| **P1** | **PR Review & Merge** | **Nikhil** | PR Compare Link ready | Merge branch `feature/parth-documentation-evidence` into upstream `main`. | Demo Req |
-| **P2** | **Merge Keyword Suggestions** | **Nikhil** | `docs/keyword_suggestions.md` | Incorporate approved keywords into `config/keywords.yaml`. | Demo Req |
-| **P3** | **Live Databricks Integration Run** | **Nikhil** | Cloud token in `.env` | Execute `python -m atlas.run` and provide `run_id` and Volume path to team. | Demo Req |
-| **P4** | **Databricks Volume Screenshots** | **Nikhil** | Completed live run | Capture UI screenshots of Volume catalog (`raw`, `clean`, `output`) for Task P6. | Demo Req |
-| **P5** | **Build Streamlit Frontend** | **Parth** | `parent2.md`, `parth2.md` | Implement `app/main.py`, 5 screens, `app/lib/`, and `tests/test_app_logic.py`. | Phase 2 |
-| **P6** | **10-Item Empirical QA Audit** | **Parth** | Nikhil's live run output | Open source URLs, inspect against 8 dimensions, log in `docs/check_results.md`. | Demo Req |
-| **P7** | **Finalize Demo Note Telemetry** | **Parth** | Nikhil's live run output | Populate Section 5 run metrics in `docs/demo_note.md`. | Demo Req |
-| **P8** | **Vet Additional Sources** | **Ragini** | Candidate seeds | Hand-vet 5 to 7 new sources for Canada and gas technologies in `sources.yaml`. | Phase 2 |
-| **P9** | **Rebuild Reports from D3 Run** | **Sachi** | Full run with fallback | Run `write_report(run_id, 'pptx')` and hand-check 3 fallback items. | Phase 2 |
+- **Parth's Ownership:** `app/` (all modules and pages), `tests/test_app_logic.py`, `docs/frontend.md`, `docs/parth_contribution_and_team_status.md`, `docs/questions_for_atlas_copco.md`, `docs/glossary.md`, `docs/keyword_suggestions.md`, `docs/demo_note.md`, `docs/check_results.md`.
+- **Teammate Ownership (Preserved Unmodified):**
+  - Nikhil: `atlas/run.py`, `atlas/filter.py`, `atlas/storage.py`, `atlas/scout/settings_store.py`, `atlas/scout/fallback.py`, `atlas/scout/stories.py`.
+  - Ragini: `atlas/compliance.py`, `atlas/collect.py`, `atlas/scout/discover.py`, `atlas/scout/vet.py`, `config/sources.yaml`, `config/discovery_seeds.yaml`.
+  - Sachi: `atlas/extract.py`, `atlas/clean.py`, `atlas/report/` (`build.py`, `charts.py`, `pdf_builder.py`, `pptx_builder.py`), `config/keywords.yaml`, `config/products.yaml`, `config/technologies.yaml`.
 
 ---
 
-## G. Detailed Individual Contributions
+## F. Delivery & Pull Request Preparation
 
-### Parth (Quality Assurance, Documentation & Frontend Lead)
-* **Completed:**
-  - Setup local testing environment with spaCy and Presidio; verified 339 tests.
-  - Authored strategic client questions document ([`docs/questions_for_atlas_copco.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/questions_for_atlas_copco.md)).
-  - Authored plain-English industrial glossary ([`docs/glossary.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/glossary.md)).
-  - Researched compressor taxonomy and false-match mitigations ([`docs/keyword_suggestions.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/keyword_suggestions.md)).
-  - Built the one-page executive brief template ([`docs/demo_note.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/demo_note.md)).
-  - Prepared the 8-dimension QA audit rubric ([`docs/check_results.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/check_results.md)).
-  - Created and maintained consolidated team handovers.
-* **To Do:**
-  - Build Phase 2 Streamlit application (`app/`) and test suite `tests/test_app_logic.py`.
-  - Conduct the 10-item empirical QA check once Nikhil provides production records.
-  - Finalize Section 5 run numbers in `docs/demo_note.md`.
-
-### Nikhil (Pipeline & Tech Lead)
-* **Completed:**
-  - Maintained core data models (`atlas/models.py`) and Databricks storage client (`atlas/storage.py`).
-  - Implemented relevance filter logic (`atlas/filter.py`) and pipeline runner (`atlas/run.py`).
-  - Built Phase 2 settings store (`settings_store.py`), fallback switching (`fallback.py`), and story clustering (`stories.py`).
-* **To Do:**
-  - Merge Parth's documentation PR into `upstream/main`.
-  - Execute live production run on Databricks under dev prefix and provide run records.
-  - Maintain Volume folders and capture Volume screenshots for demo evidence.
-  - Resolve team questions on default region settings and story clustering thresholds.
-
-### Ragini (Source Vetting & Scout Discovery Lead)
-* **Completed:**
-  - Vetted initial 15 candidate sources in `docs/source_vetting.md`.
-  - Authored Compliance Gate rules ensuring zero scraping violations.
-  - Implemented Phase 2 candidate discovery (`discover.py`) and automatic vetting (`vet.py`).
-  - Compiled initial 40 discovery seeds in `config/discovery_seeds.yaml`.
-* **To Do:**
-  - Hand-vet 5 to 7 new sources covering Canadian manufacturers and specialized technologies.
-  - Review discovered candidate outputs from live runs.
-
-### Sachi (NLP Extraction & Reporting Lead)
-* **Completed:**
-  - Implemented main text cleaning (`atlas/clean.py`) and alias deduplication with RapidFuzz.
-  - Built PII redaction pipeline with Presidio and spaCy allow-lists.
-  - Implemented Phase 2 extraction for geographic regions, industrial event types, and product models.
-  - Built PDF and PPTX report generation engines (`atlas/report/`) and validated on Databricks run `20261115T045141Z`.
-* **To Do:**
-  - Rebuild reports from the final D3/D4 multi-source run.
-  - Complete hand-checking on 3 fallback items once generated.
-
----
-
-## H. Technical Risks, Issues & Mitigations
-
-1. **Non-North-American Geography Leakage:**
-   - *Issue:* In run `20261115T045141Z`, 2 items mentioning Portugal and the Netherlands were tagged US because the source itself was US-based.
-   - *Resolution:* Sachi pushed fix commit `43bc704` ensuring that places outside North America return `region: null` instead of defaulting to US. Applies to all subsequent runs.
-2. **Missing `lxml_html_clean` in Fresh Environments:**
-   - *Issue:* Modern `lxml >= 5.2` separated HTML cleaning into `lxml_html_clean`. Without it, `justext` / `trafilatura` fails.
-   - *Resolution:* Installed in local `.venv`; documented for Nikhil to append `lxml_html_clean>=0.1.0` to `requirements.txt`.
-3. **Empty Fallback Yields in Test Runs:**
-   - *Issue:* Switching triggered for refused competitor Ingersoll Rand, but zero articles were found in allowed sources because the watchlist keywords did not match current feed articles.
-   - *Resolution:* Align watchlist terms in `config/scout_settings.yaml` with actively published topics.
-4. **Cloud Access & Token Security:**
-   - *Issue:* Accidental leakage of Databricks personal access tokens.
-   - *Resolution:* Strict compliance rule enforced. `.env` is gitignored; tokens are never logged, passed as CLI flags, or displayed in the UI.
-
----
-
-## I. Client Demo Readiness Assessment
-
-| Deliverable | Status | Missing Evidence / What Is Needed Before Demo |
-| :--- | :---: | :--- |
-| **Pipeline Architecture Presentation** | **Ready** | Pipeline diagram (`docs/images/pipeline.png`) and `prepare.md` cheat-sheet ready. |
-| **5 Proposed Sources Justification** | **Ready** | `docs/source_vetting.md` and `docs/demo_note.md` explain exact selection and exclusions. |
-| **Zero Local Storage Compliance** | **Needs Verification** | Nikhil to capture Databricks Volume catalog screenshots (`raw`, `clean`, `output`). |
-| **10 Strategic Client Questions** | **Ready** | [`docs/questions_for_atlas_copco.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/questions_for_atlas_copco.md) presentation-ready. |
-| **Glossary of Terms** | **Ready** | [`docs/glossary.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/glossary.md) presentation-ready. |
-| **Executive 1-Page Brief** | **Needs Numbers** | Parth to populate Section 5 run metrics in [`docs/demo_note.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/demo_note.md) after live run. |
-| **10-Item Empirical QA Audit** | **Pending Run** | Parth to audit 10 live items in [`docs/check_results.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/check_results.md) once JSON is provided. |
-| **Generated JSON Envelope** | **Pending Run** | Final `poc_<run_id>.json` from Nikhil's demo run. |
-| **Executive PDF/PPTX Reports** | **Ready** | Report generator working; ready to compile final demo run data. |
-
----
-
-## J. Immediate Team Next Steps (Action Plan)
-
-1. **Step 1 (Nikhil):** Merge PR `feature/parth-documentation-evidence` into `main`.
-2. **Step 2 (Nikhil):** Merge keyword recommendations from [`docs/keyword_suggestions.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/keyword_suggestions.md) into `config/keywords.yaml`.
-3. **Step 3 (Nikhil):** Execute Databricks live pipeline run (`python -m atlas.run`) and post `run_id` and output JSON path in team chat.
-4. **Step 4 (Parth):** Perform 10-item empirical audit in [`docs/check_results.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/check_results.md) against live source pages.
-5. **Step 5 (Parth):** Fill final telemetry metrics into Section 5 of [`docs/demo_note.md`](file:///c:/Users/Parth%20Sardeshmukh/My_workspace/01_Academics/Semester_5/ML/CP/docs/demo_note.md).
-6. **Step 6 (Nikhil):** Capture Volume catalog screenshots for Task P6.
-7. **Step 7 (Team):** Conduct dry run of client presentation using `prepare.md`.
+- **Feature Branch:** `feature/parth-phase2-frontend`
+- **Target Remote Fork:** `origin` (`https://github.com/ParthTimeDEV/personal_mlcp.git`)
+- **Upstream Sync Status:** Synchronized with `upstream/main` (`d0e0e14` merged cleanly; 0 divergence).
+- **Excluded Files:** `PROJECT_HANDOFF_FOR_CHATGPT.md` is strictly excluded via `.git/info/exclude`.
+- **PR Readiness:** All assigned implementation files and unit tests are complete, verified, and ready for staging and commit.
