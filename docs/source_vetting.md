@@ -234,3 +234,25 @@ intelligence). Robots.txt and the feed were read through the Compliance Gate, 3 
 - A redirect inside the host of a page we asked for (a parent's terms page) is now followed; a redirect to any other site is still refused.
 
 The scout's earlier demo run (run 20261115T192521Z) had read 3 pages from sundyne.com before this fix. None reached the output (0 passed the filter), but the run should be repeated with the corrected vetter; see `docs/decisions.md`.
+
+
+## Phase 2: search for a Canadian English-language source (2026-11-16)
+
+Ten more Canadian seeds were run through the scout (Compliance Gate, 3 s between requests, at most 8 requests per site;
+metadata only, nothing saved). Result: **no usable Canadian source.**
+
+| Site | Verdict | Reason |
+|---|---|---|
+| theenergymix.com | needs review | Terms ok, robots allow, feed found (score 65), but the listing answered HTTP 304 so no dated item was read; content is climate and energy policy, weak fit for compressors |
+| cer-rec.gc.ca, canada.ca, hydrogen-expo.com | needs review | Terms ok, robots allow, but no feed and no article links to read |
+| cga.ca | rejected by rules | robots.txt disallows the feed or listing |
+| albertainnovates.ca | rejected by rules | robots.txt disallows the homepage |
+| canadianenergycentre.ca | not read | redirects to another host (refused) |
+| canadianmetalworking.com | not read | HTTP 403 |
+| pipelinenews.ca | not read | robots.txt could not be read |
+| ballard.com | needs review | No terms page, no feed |
+
+Together with the first round (canadianmanufacturing.com, plant.ca, mromagazine.com, automationmag.com, cme-mec.ca refused by
+robots.txt; canada.ca forbids automation in a different section), 16 Canadian sites were tried. Canadian trade publishers
+mostly block automated readers or publish no feed. **Finding:** Canada is in the default region scope, but no Canadian source
+can be read without permission. See question 11 in `docs/questions_for_atlas_copco.md`.

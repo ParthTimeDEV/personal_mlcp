@@ -43,3 +43,7 @@ Ten questions, in the order we would like to ask them. For each: why we ask, and
 **10. How should we show "fact" versus "claim" in the report?**
 - *Why we ask:* we label an item "claim" when a company says it about itself (most newsroom posts) and "fact" when a neutral or official source states it.
 - *What we do with the answer:* decide whether claims are shown, grouped, or ranked lower in the report.
+
+**11. Can you ask a Canadian trade publisher for permission to read its news automatically?**
+- *Why we ask:* we tried 16 English-language Canadian sites. Most refuse automated access in robots.txt (Canadian Manufacturing, Plant, MRO Magazine, Automation Magazine, CME) or publish no readable feed. Canada is in our scope, but today no Canadian item can reach the output.
+- *What we do with the answer:* add the publisher to the register once it grants permission, or use a licensed feed you already have.
