@@ -41,6 +41,7 @@ def _stages() -> SimpleNamespace:
     from atlas.collect import collect_source
     from atlas.compliance import ComplianceGate, load_register
     from atlas.extract import extract_item
+    from atlas import review
     from atlas.scout import fallback, settings_store, stories
 
     return SimpleNamespace(
@@ -49,7 +50,7 @@ def _stages() -> SimpleNamespace:
         load_settings=settings_store.load_settings, default_settings=settings_store.default_settings,
         load_candidates=settings_store.load_candidates, save_candidates=settings_store.save_candidates,
         load_decisions=settings_store.load_decisions, usable_sources=settings_store.usable_sources,
-        load_discovery=_load_discovery,
+        load_discovery=_load_discovery, load_fact_decisions=review.load_fact_decisions,
         plan_switching=fallback.plan_switching, collect_fallback_items=fallback.collect_fallback_items,
         apply_fallback_labels=fallback.apply_fallback_labels, build_stories=stories.build_stories,
     )
@@ -399,6 +400,17 @@ def main(argv: list[str] | None = None) -> int:
 
     all_passed = [i for o in outcomes.values() for i in o.passed]
     all_passed += [i for i in switching.items if i.filter and i.filter.passed]
+    # Facts the team denied on the Facts screen stay out of the output (they remain in clean/ with their reasons).
+    try:
+        decisions = getattr(st, "load_fact_decisions", dict)()
+    except Exception as exc:
+        decisions = {}
+        log.errors.append(f"fact decisions could not be loaded: {type(exc).__name__}: {exc}")
+    denied = [i for i in all_passed if decisions.get(i.id) == "denied"]
+    if denied:
+        log.notes.append(f"{len(denied)} fact(s) left out because the team denied them")
+        _say(f"{len(denied)} fact(s) left out because the team denied them.")
+    all_passed = [i for i in all_passed if decisions.get(i.id) != "denied"]
     all_passed, story_clusters = st.build_stories(all_passed)
 
     log.refusals.extend(r for r in gate.refusals if r not in log.refusals)

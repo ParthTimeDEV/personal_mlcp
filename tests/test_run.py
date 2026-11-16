@@ -482,3 +482,14 @@ def test_stories_group_items_from_different_sources(monkeypatch, writes):
     env = output_of(writes)
     (story,) = env.stories
     assert sorted(story.source_ids) == ["src_a", "src_b"] and len(story.item_ids) == 2
+
+
+def test_denied_facts_are_left_out_of_the_output_but_kept_in_clean(monkeypatch, writes, capsys):
+    stages = install_stages(monkeypatch, [make_source("src_a")], pages_per_source=1)
+    first_id = make_item(make_page("src_a", 0), make_source("src_a")).id
+    stages.load_fact_decisions = lambda: {first_id: "denied"}
+    assert run_mod.main([]) == 0
+    assert output_of(writes).items == []
+    (clean_path,) = paths_of(writes, "clean/")
+    assert len(writes[clean_path]) == 1
+    assert "left out because the team denied" in capsys.readouterr().out

@@ -1,80 +1,83 @@
-"""Atlas Copco Market & Technology Scout — Main Application Entry Point.
-
-This Streamlit application provides competitive intelligence for Atlas Copco's
-Compressor Technique business area. It interfaces strictly with Databricks Volumes
-via atlas.storage and settings_store helpers, and starts pipeline runs via subprocess.
-"""
-
+"""Dashboard: change the filters, press Done, the system saves them and reruns by itself, then shows the result."""
 from __future__ import annotations
+
+import typing
 
 import streamlit as st
 
-from app.lib.data import get_active_prefix, is_demo_prefix, latest_run_id, list_run_ids
+from app.lib.data import get_active_prefix, is_demo_prefix, latest_run_id, load_envelope, clear_data_cache
+from app.lib.settings_ui import load_technology_labels
+from app.lib.simple_ui import run_panel, trigger_rerun
+from atlas.models import EventType, ScoutSettings
+from atlas.scout import settings_store
+
+st.set_page_config(page_title="Compressor market scout", page_icon="📊", layout="wide")
+EVENTS = list(typing.get_args(EventType))
+REGIONS = ["US", "CA", "MX"]
 
 
-def main() -> None:
-    st.set_page_config(
-        page_title="Atlas Copco Market Scout",
-        page_icon="⚙️",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
+st.title("📊 Compressor market scout")
+st.caption("Change the filters, press **Done**. The system saves them and reruns automatically.")
+if is_demo_prefix():
+    st.warning("You are looking at the real demo folders.")
 
-    prefix = get_active_prefix()
+try:
+    current = settings_store.load_settings()
+except Exception as exc:
+    st.error(f"The saved settings could not be read: {exc}")
+    st.stop()
 
-    # Sidebar: System Environment & Scope
-    st.sidebar.title("⚙️ Market Scout")
-    st.sidebar.caption("Atlas Copco — Compressor Technique PoC")
-    st.sidebar.divider()
+with st.form("filters"):
+    c1, c2 = st.columns(2)
+    regions = c1.multiselect("Regions", REGIONS, default=list(current.regions),
+                             help="Only items about these regions are kept.")
+    months = c2.slider("How recent (months)", 1, 60, current.recent_months,
+                       help="Items older than this are dropped.")
+    technologies = c1.multiselect("Technologies (empty = all)", load_technology_labels(),
+                                  default=[t for t in current.technologies if t in load_technology_labels()])
+    events = c2.multiselect("Types of news (empty = all)", EVENTS, default=list(current.event_types),
+                            format_func=lambda e: e.replace("_", " "))
+    include = c1.text_area("Also count these words as compressor-related (one per line)",
+                           "\n".join(current.extra_compressor_keywords), height=90)
+    exclude = c2.text_area("Leave out anything containing these words (one per line)",
+                           "\n".join(current.excluded_keywords), height=90)
+    done = st.form_submit_button("✅ Done", type="primary")
 
-    # Storage Prefix Notice
-    st.sidebar.markdown(f"**Storage Prefix:** `{prefix or '(root / demo)'}`")
-    if is_demo_prefix():
-        st.sidebar.warning(
-            "⚠️ **Live Demo Mode:** `ATLAS_PATH_PREFIX` is empty. You are connected to the primary demo storage."
-        )
+if done:
+    try:
+        new = current.model_copy(update=dict(
+            regions=regions, recent_months=months, technologies=technologies, event_types=events,
+            extra_compressor_keywords=[w.strip() for w in include.splitlines() if w.strip()],
+            excluded_keywords=[w.strip() for w in exclude.splitlines() if w.strip()]))
+        settings_store.save_settings(ScoutSettings.model_validate(new.model_dump()))
+    except Exception as exc:
+        st.error(f"Not saved: {exc}")
     else:
-        st.sidebar.info(f"Connected to sandbox: `{prefix}`")
+        st.success("Saved.")
+        trigger_rerun("new filters")
 
-    # Run selection info
-    run_ids = list_run_ids()
-    latest_id = latest_run_id()
-    if latest_id:
-        st.sidebar.success(f"**Latest Run:** `{latest_id}`")
-        st.sidebar.caption(f"{len(run_ids)} run(s) available in Volume.")
-    else:
-        st.sidebar.info("No runs found in storage yet.")
+run_panel()
 
-    st.sidebar.divider()
-    st.sidebar.caption("Local Enterprise Dashboard • Zero Local Storage")
+st.divider()
+run_id = latest_run_id()
+if run_id is None:
+    st.info("No results yet. Press Done to run for the first time.")
+    st.stop()
+try:
+    envelope = load_envelope(run_id)
+except Exception as exc:
+    st.error(f"The latest run could not be read: {exc}")
+    st.stop()
 
-    # Main page content
-    st.title("Atlas Copco Market & Technology Scout")
-    st.markdown(
-        """
-        Welcome to the **Atlas Copco Market & Technology Intelligence Scout**.
-        This platform monitors North American compressor news, product announcements,
-        facility investments, and competitor activities in full compliance with web
-        automation standards and zero-local-data policies.
-
-        ---
-        ### Navigation Guide
-        Use the sidebar to navigate between operational modules:
-
-        * **📊 Dashboard (`1_Dashboard`):** Browse extracted intelligence, filter facts/claims, explore stories, and export data in-memory.
-        * **⚙️ Settings (`2_Settings`):** Configure the Auto Scout Engine, fine-tune relevance thresholds, and manage followed competitor watchlists.
-        * **🌐 Sources (`3_Sources`):** Inspect the vetted source register and review newly discovered candidates and trust scores.
-        * **🚀 Run Launcher (`4_Run`):** Safely initiate pipeline collection runs with live progress feedback.
-        * **📑 Executive Report (`5_Report`):** Generate and download formal executive PPTX presentations and PDF digests.
-        """
-    )
-
-    if not latest_id:
-        st.info(
-            "💡 **Initial State:** No pipeline runs detected in the current cloud storage prefix. "
-            "Navigate to **Run Launcher** to start a run, or configure your scope in **Settings**."
-        )
-
-
-if __name__ == "__main__":
-    main()
+others = [i for i in envelope.items if not (i.company or "").lower().startswith("atlas copco")]
+m1, m2, m3 = st.columns(3)
+m1.metric("Facts kept", len(envelope.items))
+m2.metric("Sources read", sum(1 for s in envelope.sources if s.kind != "fallback" and s.items_collected > 0))
+m3.metric("Run", run_id)
+st.subheader("What we found")
+rows = [{"Date": i.published_at or "", "Company": i.company or "", "News": (i.event_type or "other").replace("_", " "),
+         "Fact": (i.key_facts[0] if i.key_facts else i.title or ""), "Source": i.source_url}
+        for i in sorted(envelope.items, key=lambda i: i.published_at or "", reverse=True)]
+st.dataframe(rows, use_container_width=True, hide_index=True,
+             column_config={"Source": st.column_config.LinkColumn("Source", display_text="open")})
+st.caption("Use **Facts** to mark facts important or not, **Sources** to confirm sources, **Report** for the brief.")
