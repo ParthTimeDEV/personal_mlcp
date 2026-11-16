@@ -7,8 +7,8 @@ from app.lib.data import latest_run_id, load_envelope
 from app.lib.simple_ui import run_panel, trigger_rerun
 from atlas import review
 
-st.set_page_config(page_title="Facts", page_icon="✅", layout="wide")
-st.title("✅ Facts")
+st.set_page_config(page_title="Facts", layout="wide")
+st.title("Facts")
 st.caption("Mark each fact **Important** or **Not important**. Not important facts are left out of the next run and "
            "of the report. Press Save when you are done.")
 
@@ -42,7 +42,7 @@ with st.form("facts"):
                           format_func=LABELS.get, horizontal=True, label_visibility="collapsed")
         choice[item.id] = picked
         st.divider()
-    saved = st.form_submit_button("💾 Save", type="primary")
+    saved = st.form_submit_button("Save", type="primary")
 
 if saved:
     updated = dict(decisions)

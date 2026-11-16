@@ -9,8 +9,8 @@ from atlas import review
 from atlas.compliance import load_register
 from atlas.scout import settings_store
 
-st.set_page_config(page_title="Sources", page_icon="🌐", layout="wide")
-st.title("🌐 Sources")
+st.set_page_config(page_title="Sources", layout="wide")
+st.title("Sources")
 st.caption("Where our facts come from. Confirm the ones you are happy with. Blocked ones are shown with the reason; "
            "we never read them.")
 st.info("Confirming here records your team's decision. It is not an approval by Atlas Copco.")
@@ -26,8 +26,8 @@ except Exception as exc:
 
 run_panel()
 tab_conf, tab_todo, tab_block = st.tabs([
-    f"✅ Confirmed ({len(groups['confirmed'])})", f"🟡 To confirm ({len(groups['to_confirm'])})",
-    f"⛔ Blocked ({len(groups['blocked'])})"])
+    f"Confirmed ({len(groups['confirmed'])})", f"To confirm ({len(groups['to_confirm'])})",
+    f"Blocked ({len(groups['blocked'])})"])
 
 
 def show(rows: list[dict], button: str | None, new_value: str | None) -> None:

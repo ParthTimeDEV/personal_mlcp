@@ -11,12 +11,12 @@ from app.lib.simple_ui import run_panel, trigger_rerun
 from atlas.models import EventType, ScoutSettings
 from atlas.scout import settings_store
 
-st.set_page_config(page_title="Compressor market scout", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Compressor market scout", layout="wide")
 EVENTS = list(typing.get_args(EventType))
 REGIONS = ["US", "CA", "MX"]
 
 
-st.title("📊 Compressor market scout")
+st.title("Compressor market scout")
 st.caption("Change the filters, press **Done**. The system saves them and reruns automatically.")
 if is_demo_prefix():
     st.warning("You are looking at the real demo folders.")
@@ -41,7 +41,7 @@ with st.form("filters"):
                            "\n".join(current.extra_compressor_keywords), height=90)
     exclude = c2.text_area("Leave out anything containing these words (one per line)",
                            "\n".join(current.excluded_keywords), height=90)
-    done = st.form_submit_button("✅ Done", type="primary")
+    done = st.form_submit_button("Done", type="primary")
 
 if done:
     try:
